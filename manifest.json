@@ -1,0 +1,13 @@
+{
+  "short_name": "swVerify1",
+  "display": "standalone",
+  "start_url": "./?app",
+  "scope": "./",
+  "icons": [
+    {
+      "src": "icon-512x512.png",
+      "type":  "image/png",
+      "sizes": "512x512"
+    }
+  ]
+}

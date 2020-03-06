@@ -1,0 +1,987 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no, user-scalable=no">
+  <link rel="icon" type="image/png" href="icon-512x512.png">
+  <link rel="apple-touch-icon" href="icon-512x512.png" sizes="512x512"/>
+  <link rel="manifest" href="manifest.json">
+  <script src="common.js"></script>
+  <style>
+.index {
+  font-family: 游ゴシック体, 'Yu Gothic', YuGothic, 'ヒラギノ角ゴシック Pro', 'Hiragino Kaku Gothic Pro', メイリオ, Meiryo, Osaka, 'ＭＳ Ｐゴシック', 'MS PGothic', sans-serif;
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  margin: 0px;
+  padding: 0px;
+}
+.page {
+  display: none;
+  margin: 0px 5px;
+}
+.title-doc {
+  padding: 0px 5px;
+}
+.title-outer {
+  display: table;
+}
+.title-inner {
+  display: table-cell;
+  vertical-align: middle;
+}
+.btn {
+  display: block;
+  position: relative;
+  /*width: 80px; 横幅は各要素で指定*/
+  margin: 0px;
+  padding: 0.2em;
+  text-align: center;
+  text-decoration: none;
+  color: #1B1B1B;
+  background: #fff;
+  border:1px solid #1B1B1B;
+}
+.btn:hover  {
+  background: #1B1B1B;
+  color: #fff;
+  cursor: pointer;
+  text-decoration: none;
+}
+.btn:active {
+  background: #1B1B1B;
+  color: #fff;
+  cursor: pointer;
+  text-decoration: none;
+}
+  </style>
+  <title>swVerify1</title>
+</head>
+<body>
+
+<!--
+****************************************
+div index start
+****************************************
+-->
+<div class="index">
+
+
+
+<!--
+****************************************
+error.page
+****************************************
+-->
+<div class="page" id="error">
+<style>
+</style>
+<div class="doc">
+
+<div class="title-outer">
+  <div class="title-inner">
+    <h1>エラー発生</h1>
+  </div>
+</div>
+<span class="btn" style="width:150px" id="error-reload">再読み込み</span>
+<br>
+再読み込みをお願いします。再読み込みしても挙動が不安定な場合は再インストールをお願いします。<br>
+
+</div>
+<script type="text/javascript">
+
+document.getElementById("error-reload").addEventListener("click", () => {
+  location.reload(true); //true:サーバから再読込/false:キャッシュから再読込
+  //location.href = "/?app"
+});
+
+</script>
+</div>
+
+
+
+<!--
+****************************************
+load.page
+****************************************
+-->
+<div class="page" id="load">
+
+<style>
+
+#loadtitle {
+  position: absolute;
+  top: 0;
+  left: 0;
+  height: 80vh;
+  width: 100%;
+  margin: 0;
+  background: #fff;
+  opacity: 1;
+  z-index: 1;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+#loader-wrapper {
+  position: absolute;
+  top: 0;
+  left: 0;
+  height: 80vh;
+  width: 100%;
+  opacity: 1;
+  z-index: 2;
+  transition: opacity .3s;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  border-radius: 6px;
+}
+
+#loader {
+  color: #000;
+  font-size: 180px;
+  text-indent: -9999em;
+  overflow: hidden;
+  width: 1em;
+  height: 1em;
+  border-radius: 50%;
+  margin: 0;
+  -webkit-transform: translateZ(0);
+  -ms-transform: translateZ(0);
+  transform: translateZ(0);
+  -webkit-animation: load6 2.0s infinite ease, round 2.0s infinite ease;
+  animation: load6 2.0s infinite ease, round 2.0s infinite ease;
+}
+@-webkit-keyframes load6 {
+  0% {
+    box-shadow: 0 -0.83em 0 -0.4em, 0 -0.83em 0 -0.42em, 0 -0.83em 0 -0.44em, 0 -0.83em 0 -0.46em, 0 -0.83em 0 -0.477em;
+  }
+  5%,
+  95% {
+    box-shadow: 0 -0.83em 0 -0.4em, 0 -0.83em 0 -0.42em, 0 -0.83em 0 -0.44em, 0 -0.83em 0 -0.46em, 0 -0.83em 0 -0.477em;
+  }
+  10%,
+  59% {
+    box-shadow: 0 -0.83em 0 -0.4em, -0.087em -0.825em 0 -0.42em, -0.173em -0.812em 0 -0.44em, -0.256em -0.789em 0 -0.46em, -0.297em -0.775em 0 -0.477em;
+  }
+  20% {
+    box-shadow: 0 -0.83em 0 -0.4em, -0.338em -0.758em 0 -0.42em, -0.555em -0.617em 0 -0.44em, -0.671em -0.488em 0 -0.46em, -0.749em -0.34em 0 -0.477em;
+  }
+  38% {
+    box-shadow: 0 -0.83em 0 -0.4em, -0.377em -0.74em 0 -0.42em, -0.645em -0.522em 0 -0.44em, -0.775em -0.297em 0 -0.46em, -0.82em -0.09em 0 -0.477em;
+  }
+  100% {
+    box-shadow: 0 -0.83em 0 -0.4em, 0 -0.83em 0 -0.42em, 0 -0.83em 0 -0.44em, 0 -0.83em 0 -0.46em, 0 -0.83em 0 -0.477em;
+  }
+}
+@keyframes load6 {
+  0% {
+    box-shadow: 0 -0.83em 0 -0.4em, 0 -0.83em 0 -0.42em, 0 -0.83em 0 -0.44em, 0 -0.83em 0 -0.46em, 0 -0.83em 0 -0.477em;
+  }
+  5%,
+  95% {
+    box-shadow: 0 -0.83em 0 -0.4em, 0 -0.83em 0 -0.42em, 0 -0.83em 0 -0.44em, 0 -0.83em 0 -0.46em, 0 -0.83em 0 -0.477em;
+  }
+  10%,
+  59% {
+    box-shadow: 0 -0.83em 0 -0.4em, -0.087em -0.825em 0 -0.42em, -0.173em -0.812em 0 -0.44em, -0.256em -0.789em 0 -0.46em, -0.297em -0.775em 0 -0.477em;
+  }
+  20% {
+    box-shadow: 0 -0.83em 0 -0.4em, -0.338em -0.758em 0 -0.42em, -0.555em -0.617em 0 -0.44em, -0.671em -0.488em 0 -0.46em, -0.749em -0.34em 0 -0.477em;
+  }
+  38% {
+    box-shadow: 0 -0.83em 0 -0.4em, -0.377em -0.74em 0 -0.42em, -0.645em -0.522em 0 -0.44em, -0.775em -0.297em 0 -0.46em, -0.82em -0.09em 0 -0.477em;
+  }
+  100% {
+    box-shadow: 0 -0.83em 0 -0.4em, 0 -0.83em 0 -0.42em, 0 -0.83em 0 -0.44em, 0 -0.83em 0 -0.46em, 0 -0.83em 0 -0.477em;
+  }
+}
+@-webkit-keyframes round {
+  0% {
+    -webkit-transform: rotate(0deg);
+    transform: rotate(0deg);
+  }
+  100% {
+    -webkit-transform: rotate(360deg);
+    transform: rotate(360deg);
+  }
+}
+@keyframes round {
+  0% {
+    -webkit-transform: rotate(0deg);
+    transform: rotate(0deg);
+  }
+  100% {
+    -webkit-transform: rotate(360deg);
+    transform: rotate(360deg);
+  }
+}
+
+</style>
+
+<h1 id="loadtitle">ロード中...</h1>
+<div id="loader-wrapper">
+  <div id="loader"></div>
+</div>
+
+<script type="text/javascript">
+</script>
+
+</div>
+
+
+
+<!--
+****************************************
+install.page
+****************************************
+-->
+<div class="page" id="install">
+<style>
+#install-title-inner2 {
+  display: table-cell;
+  vertical-align: middle;
+  padding: 0px 5px;
+}
+</style>
+<div class="doc">
+
+<div class="title-outer">
+  <div class="title-inner" id="install-title-inner1">
+    <img src="icon-512x512.png" alt="Image" width="64" height="64">
+  </div>
+  <div class="title-inner" id="install-title-inner2">
+    <h1>swVerfy1</h1>
+  </div>
+</div>
+<span class="btn" style="width:150px" id="install-browserRun">ブラウザで利用</span>
+<br>
+サービスワーカー検証アプリです。<br>
+当画面から「ホーム画面へ追加」を行うことで端末にインストールできます。<br>
+
+</div>
+<script type="text/javascript">
+
+document.getElementById("install-browserRun").addEventListener("click", () => {
+  location.href = "/?app"
+});
+
+</script>
+</div>
+
+
+<!--
+****************************************
+app.page
+****************************************
+-->
+<div class="page" id="app">
+<style>
+
+#app-body {
+  position: relative;
+  transform: scale(0.7);
+  top: -10px;
+  left: -21.5%;
+  width: 143%;
+  height: 143%;
+}
+
+/* メニュー起動ボタンここから */
+#app-menu-menuBtn-base {
+  position: fixed;
+  top: 9px;
+  right: 3px;
+  z-index: 30;
+}
+
+#app-menu-menuBtn-body {
+  position: relative;
+  width: 30px;
+  height: 30px;
+}
+
+#app-menu-menuBtn {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  padding: 0;
+}
+
+#app-menu-menuBtn span, #app-menu-menuBtn span:before, #app-menu-menuBtn span:after {
+  position: absolute;
+  height: 6px;/*線の太さ*/
+  width: 30px;/*長さ*/
+  border-radius: 3px;
+  background: black;
+  display: block;
+  content: '';
+  cursor: pointer;
+  bottom: 29px;
+}
+#app-menu-menuBtn span:before {
+  bottom: -12px;
+}
+#app-menu-menuBtn span:after {
+  bottom: -24px;
+}
+/* メニュー起動ボタンここまで */
+
+/* モーダルCSSここから */
+.modalArea {
+  transform: scale(0.7);
+  visibility: hidden; /* displayではなくvisibility */
+  opacity : 0;
+  position: fixed;
+  z-index: 40; /* サイトによってここの数値は調整 */
+  top: -21.5%;
+  left: -21.5%;
+  width: 143%;
+  height: 143%;
+  transition: .4s;
+}
+
+#modalBg {
+  width: 100%;
+  height: 100%;
+  background-color: rgba(30,30,30,0.9);
+}
+
+#modalWrapper {
+  position: absolute;
+  top: 5%;
+  left: 50%;
+  transform:translateX(-50%);
+  width: 80%;
+  max-width: 500px;
+  max-height: 90%;
+  padding: 10px 30px;
+  background-color: #fff;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+#modalDefaultContents-base {
+  position: fixed;
+  top: 0.5rem;
+  right: 1rem;
+}
+
+#modalDefaultContents-body {
+  position: relative;
+  width: 150px;
+  height: 32px;
+}
+
+#version-base {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  right: -10px;
+  padding: 0;
+}
+#version-body {
+  margin-right: 12px;
+  width: 118px;
+  height: 100%;
+  display: table;
+}
+#version {
+  text-align: right;
+  display: table-cell;
+  vertical-align: middle;
+}
+#closeModal-base {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  right: 0;
+  padding: 0;
+}
+#closeModal-body {
+  width: 32px;
+  height: 100%;
+}
+#closeModal>span {
+  display:table-cell;
+  vertical-align: middle;
+  position:absolute;
+  top:0px;
+  left:0px;
+  width:32px;
+  height:32px;
+  border:0;
+  background-color:#1B1B1B;
+  border-radius:32px;
+  margin:0;
+  padding:0;
+  transform:scale(0.5);
+  cursor:pointer;
+}
+#closeModal>span:before {
+  content:"";
+  position:absolute;
+  display:inline-block;
+  top:4px;
+  left:13px;
+  width:6px;
+  height:24px;
+  border:0;
+  margin:0;
+  padding:0;
+  background-color:white;
+  -moz-transform:rotate(45deg);
+  -webkit-transform:rotate(45deg);
+  transform:rotate(45deg);
+}
+#closeModal>span:after {
+  content:"";
+  position:absolute;
+  display:inline-block;
+  top:4px;
+  left:13px;
+  width:6px;
+  height:24px;
+  border:0;
+  margin:0;
+  padding:0;
+  background-color:white;
+  -moz-transform:rotate(-45deg);
+  -webkit-transform:rotate(-45deg);
+  transform:rotate(-45deg);
+}
+#closeModal>span:hover {
+  background-color:white;
+}
+#closeModal>span:hover:before {
+  background-color:#1B1B1B;
+}
+#closeModal>span:hover:after {
+  background-color:#1B1B1B;
+}
+
+.is-show { /* モーダル表示用クラス */
+  visibility: visible;
+  opacity : 1;
+}
+/* モーダルCSSここまで */
+
+/* モーダル内表示ここから */
+#modalContents>h1 {
+  padding: 0px;
+  margin: 0px;
+}
+.menu-btn-body {
+  display: table;
+  width: 100%;
+  padding: 0;
+  margin: 0;
+}
+.menu-btn {
+  float: left;
+  padding: 5px;
+  margin: 5px;
+  width: 80px;
+  height: 25px;
+}
+/* モーダル内表示ここまで */
+
+</style>
+
+
+
+<div id="app-body">
+ここからログをぶわっと出す予定ー<br>
+<br>
+<br>
+<br>
+</div>
+
+<div id="app-menu-menuBtn-base">
+  <div id="app-menu-menuBtn-body">
+    <div id="app-menu-menuBtn"><span></span></div>
+  </div>
+</div>
+
+<!-- モーダルエリアここから(モーダルトップ要素にクラス付与してclasslistで表示onoff) -->
+<section class="modalArea" id="modalArea">
+  <div id="modalBg"></div>
+  <div id="modalWrapper">
+    <div id="modalDefaultContents-base">
+      <div id="modalDefaultContents-body">
+        <div id="version-base">
+          <div id="version-body">
+            <div id="version"></div>
+          </div>
+        </div>
+        <div id="closeModal-base">
+          <div id="closeModal-body">
+            <div id="closeModal"><span></span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div id="modalContents">
+      <h1>Menu</h1>
+      <ul class="menu-btn-body">
+        <li class="btn menu-btn" id="app-gotoInstall">Install</li>
+        <li class="btn menu-btn" id="app-reload">Reload</li>
+      </ul>
+アプリ更新には2回reloadする必要があるので注意！<br>
+aaa<br>
+aaa<br>
+aaa<br>
+aaa<br>
+aaa<br>
+aaa<br>
+aaa<br>
+aaa<br>
+aaa<br>
+aaa<br>
+aaa<br>
+aaa<br>
+aaa<br>
+aaa<br>
+aaa<br>
+aaa<br>
+aaa<br>
+aaa<br>
+aaa<br>
+aaa<br>
+aaa<br>
+aaa<br>
+aaa<br>
+aaa<br>
+aaa<br>
+aaa<br>
+aaa<br>
+aaa<br>
+aaa<br>
+aaa<br>
+aaa<br>
+aaa<br>
+aaa<br>
+aaa<br>
+aaa<br>
+aaa<br>
+aaa<br>
+    </div>
+  </div>
+</section>
+<!-- モーダルエリアここまで -->
+
+
+
+<script type="text/javascript">
+
+menuInit = () => {
+  console.log(getYMDHMSM() + " : menuInit start");
+  const modalArea = document.getElementById('modalArea');
+  const openModal = document.getElementById('app-menu-menuBtn');
+  const closeModal = document.getElementById('closeModal');
+  const modalBg = document.getElementById('modalBg');
+  const toggle = [openModal,closeModal,modalBg];
+  
+  for(let i=0, len=toggle.length ; i<len ; i++){
+    console.log(getYMDHMSM() + " : modal display");
+    console.log(toggle[i]);
+    toggle[i].addEventListener('click', () => {
+      console.log(getYMDHMSM() + " : modal toggle");
+      modalArea.classList.toggle('is-show');
+    },false);
+  }
+  return;
+};
+
+document.getElementById("app-reload").addEventListener("click", () => {
+  location.reload(false); //true:サーバから再読込/false:キャッシュから再読込
+  //location.href = "/?app"
+});
+
+document.getElementById("app-gotoInstall").addEventListener("click", () => {
+  setPage("install");
+  //location.href = "/"
+});
+
+</script>
+</div>
+
+
+
+<!--
+****************************************
+template.page
+****************************************
+-->
+<div class="page" id="template">
+<style>
+</style>
+
+<!-- html文書記載箇所 基本的に各要素は「id」指定、共通要素で止むを得ない場合のみ「class」使用-->
+
+<script type="text/javascript">
+</script>
+</div>
+
+
+
+<!--
+****************************************
+div index end
+****************************************
+-->
+</div>
+
+
+
+<script>
+/*
+****************************************
+index.html js start
+ここでグローバル変数を書いても、各処理でアクセスできないので注意！
+関数化して各処理に渡す
+****************************************
+*/
+
+/*
+----------------------------------------
+setTimeout promise版
+----------------------------------------
+*/
+let wait = async (ms) => {
+  return new Promise( (resolve) => {
+    setTimeout(() => resolve(), ms);
+  });
+}
+
+/*
+----------------------------------------
+非同期テスト
+----------------------------------------
+*/
+let forSwTEST = async () => {
+  console.log(getYMDHMSM() + " : forSwTEST start");
+  await wait(2000);
+  console.log(getYMDHMSM() + " : forSwTEST finished");
+  let res = getYMDHMSM() + "forSwTEST res";
+  return res;
+}
+let chkCacheTEST = async () => {
+  console.log(getYMDHMSM() + " : chkCacheTEST start");
+  await wait(4000);
+  console.log(getYMDHMSM() + " : chkCacheTEST finished");
+  let res = getYMDHMSM() + "chkCacheTEST res";
+  return res;
+}
+let loadFuncTEST = () => {
+  console.log(getYMDHMSM() + " : loadFuncTEST start");
+  const forSwRes = forSwTEST(); //SW関連非同期テスト
+  const chkCacheRes = chkCacheTEST(); //キャッシュチェック非同期テスト
+  const promiseArr = [forSwRes, chkCacheRes];
+  Promise.all(promiseArr).then( (resArr) => {
+    console.log(getYMDHMSM() + " : forSwRes : "+ resArr[0]);
+    console.log(getYMDHMSM() + " : chkCacheRes : "+ resArr[1]);
+    console.log(getYMDHMSM() + " : goto app");
+    setPage("app");
+  });
+}
+
+/*
+----------------------------------------
+sw関連
+----------------------------------------
+*/
+
+//sw準備
+let readySw = () => {
+  console.log(getYMDHMSM() + " : readySw start");
+  return new Promise( async (resolve, reject) => {
+    navigator.serviceWorker.ready.then( async (registration) => {
+
+      console.log(getYMDHMSM() + " : ServiceWorkerの準備ができました。");
+
+      //オンラインでswの更新がある場合は自動更新
+      if (navigator.onLine) {
+        registration.onupdatefound = () => {
+          registration.update();
+          console.log(getYMDHMSM() + " : ServiceWorkerを更新しました。");
+        }
+      }
+
+      //sw側からのメッセージ受け取りリスナ登録
+      navigator.serviceWorker.addEventListener('message', (event) => {
+        console.log(`${getYMDHMSM()} : dom:onMessage:${JSON.stringify(event.data)}`);
+        switch (event.data.func) {
+          case 'updateCache': //キャッシュ更新アラートリクエスト
+            console.log(`${getYMDHMSM()} : dom:switch:${event.data.func}`);
+            alert("キャッシュを更新しました。");
+            break;
+          case 'cacheNone': //キャッシュなしアラートリクエスト
+            console.log(`${getYMDHMSM()} : dom:switch:${event.data.func}`);
+            alert("キャッシュの更新をお願いします。");
+            break;
+          case 'getVersion': //バージョン取得リクエスト
+            console.log(`${getYMDHMSM()} : dom:switch:${event.data.func}`);
+            let verEl = document.createElement("span");
+            verEl.setAttribute("id", "version");
+            verEl.textContent = "version : " + event.data.data;
+            document.getElementById("version").innerText = event.data.data;
+            break;
+          default:
+            break;
+        }
+      });
+
+      //コントロール開始待ちリスナ
+      let controller_change_promise = () => {
+        console.log(getYMDHMSM() + " : ServiceWorkerのコントロール開始待ち - start");
+        console.log(navigator.serviceWorker.controller);
+        return new Promise( (resolve, reject) => {
+          navigator.serviceWorker.oncontrollerchange = () => {
+            console.log(getYMDHMSM() + " : ServiceWorkerのコントロール開始待ち - end");
+            resolve();
+          };
+          setTimeout( () => {
+            console.log(getYMDHMSM() + " : ServiceWorkerのコントロール開始待ち - timeout");
+            reject();
+          }, 3000);
+        })
+      };
+
+      // 既にコントロール状態 (二回目以降のロード時)
+      if (navigator.serviceWorker.controller) {
+        console.log(getYMDHMSM() + " : ServiceWorker resolve(二回目以降のロード時でコントロール済)");
+        resolve(); //promise成功
+      } else {
+
+        // コントロールされるのを待つ (初回ロード時) ... 3000ミリ秒でタイムアウトにしてる
+        // 開発者ツールのキャッシュ削除/ハード読込を単純に行うとコントローラが初期化される模様
+        // リロードする際はキャッシュから呼び出す(ソフトリロード)か、sw&キャッシュ全て消した上でハードリロード(サーバからリロード)
+        controller_change_promise().then( () => {
+          console.log(getYMDHMSM() + " : ServiceWorker resolve(初回ロード時のコントロール開始)");
+          resolve(); //promise成功
+        }).catch( () => {
+          console.log(getYMDHMSM() + " : ServiceWorker reject(コントロール開始失敗)");
+          reject(); //promise失敗
+        })
+
+      }
+    });
+  })
+};
+
+//sw登録
+let regSw = () => {
+  console.log(getYMDHMSM() + " : regSw start");
+  return new Promise( async (resolve, reject) => {
+    navigator.serviceWorker.register('sw.js').then( (registration) => {
+      console.log(getYMDHMSM() + " : ServiceWorkerを登録しました。");
+      resolve(); //promise成功
+    }).catch( (error) => {
+      console.log(getYMDHMSM() + " : ServiceWorkerの登録に失敗 : " + error);
+      console.log(getYMDHMSM() + " : ServiceWorker reject");
+      reject(); //promise失敗
+      alert('ServiceWorkerの登録に失敗した為、再読み込みをお願いします。');
+    });
+    setTimeout( () => {
+      console.log(getYMDHMSM() + " : ServiceWorkerの登録に失敗 - timeout");
+      reject();
+    }, 3000);
+  })
+};
+
+//sw関連
+let forSw = () => {
+  console.log(getYMDHMSM() + " : forSw start");
+  return new Promise( async (resolve, reject) => {
+
+    console.log(getYMDHMSM() + " : in navigator");
+    console.log(navigator);
+
+    if ('serviceWorker' in navigator) {
+      //sw登録状況判断と対応
+      let reg = await navigator.serviceWorker.getRegistration();
+      if (reg) {
+        console.log(getYMDHMSM() + " : ServiceWorker登録済のため再登録不要、準備開始");
+        readySw()
+        .then( () => resolve() ) //sw準備完了
+        .catch( () => reject() ) //sw準備失敗
+      } else {
+        console.log(getYMDHMSM() + " : ServiceWorker未登録のため登録開始");
+        await regSw() //sw登録
+        .then( () => readySw() ) //sw準備
+        .then( () => resolve() ) //sw準備完了
+        .catch( () => reject() ) //sw登録or準備失敗
+      }
+    } else {
+      console.log(getYMDHMSM() + " : ServiceWorker reject");
+      reject(); //promise失敗
+      alert("お使いのブラウザではServiceWorkerをサポートしていないため、当アプリはご利用頂けません。");
+    }
+
+  })
+}
+
+/*
+----------------------------------------
+キャッシュチェック
+----------------------------------------
+*/
+let chkCache = () => {
+  console.log(getYMDHMSM() + " : chkCache start");
+  return new Promise( (resolve, reject) => {
+    let promiseArr = [];
+    let cacheItemRes = "";
+    for (let cacheItem of getCacheItems()) {
+      //console.log(getYMDHMSM() + " : chkCache : "+ cacheItem);
+      cacheItemRes = fetch(new Request(cacheItem));
+      promiseArr.push(cacheItemRes)
+    }
+    Promise.all(promiseArr).then( (resArr) => {
+      let res = true;
+      for (let itemRes of resArr) {
+        if (itemRes.status != 200) {
+          console.log(getYMDHMSM() + " : chkCache reject : item : " + itemRes.url);
+          res = false
+          reject();
+        }
+      }
+      if (res) {
+        console.log(getYMDHMSM() + " : chkCache resolve");
+        resolve();
+      }
+    }).catch( (err) =>{
+      console.log(getYMDHMSM() + " : chkCache reject : " + err);
+      reject();
+    })
+  });
+}
+
+/*
+----------------------------------------
+バージョン取得
+----------------------------------------
+*/
+let getVersion = () => {
+  console.log(getYMDHMSM() + " : getVersion start");
+  return new Promise( async (resolve) => {
+    console.log(getYMDHMSM() + " : postMessage : getVersion");
+    registration = await navigator.serviceWorker.getRegistration();
+    await registration.active.postMessage({func:"getVersion", data:""});
+    resolve();
+  });
+};
+
+/*
+----------------------------------------
+アプリ準備
+----------------------------------------
+*/
+let appInit = () => {
+  console.log(getYMDHMSM() + " : appInit start");
+  return new Promise( async (resolve) => {
+    //ここで諸々のアプリ起動準備を実施
+    menuInit();
+    resolve();
+  });
+};
+
+/*
+----------------------------------------
+ロード～アプリへ
+----------------------------------------
+*/
+let loadFunc = () => {
+  console.log(getYMDHMSM() + " : loadFunc start");
+
+  //sw関連
+  forSw()
+
+  //キャッシュチェック
+  .then( () => chkCache() )
+
+  //バージョン取得
+  .then( () => getVersion() )
+
+  //アプリ初期処理
+  .then( () => appInit() )
+
+  //アプリ起動
+  .then( () => setPage("app") )
+
+  //エラー時(sw関連～アプリ起動のどこかでエラーになった際に拾われる)
+  .catch( () => setPage("error") );
+
+}
+
+/*
+----------------------------------------
+ハッシュ値による表示切替
+----------------------------------------
+*/
+
+//クラスstyle操作
+let classStyle = (sels, prop, prov) => {
+  for(let sel of sels) {
+    if (prop == "display") {
+      sel.style.display = prov;
+    }
+  }
+  return;
+}
+
+//ハッシュ指定で表示切替(id要素が存在しない場合はエラー)
+let setPage = (hash) => {
+  let els = document.getElementsByClassName("page");
+  classStyle(els, "display", "none");
+  let el = document.getElementById(hash);
+  if ( el != null ) {
+    console.log(getYMDHMSM() + " : " + hash + " display");
+    el.style.display = "block";
+  } else {
+    el = document.getElementById("error");
+    el.style.display = "block";
+  }
+  return;
+}
+
+/*
+****************************************
+init proc
+****************************************
+*/
+window.addEventListener("DOMContentLoaded", () => {
+  //インストール画面へ
+  if ( location.search == "" ) {
+    setPage("install");
+
+  //ロード～アプリ画面へ
+  } else if ( location.search == "?app" ) {
+    setPage("load");
+    //loadFuncTEST(); //非同期テスト
+    loadFunc();
+
+  //想定外リクエスト
+  } else {
+    //クエリ値エラー
+    setPage("error");
+  }
+
+})
+//alert("ここまで読み込めてるかチェック。");
+
+/*
+----------------------------------------
+index.html js end
+----------------------------------------
+*/
+</script>
+</body>
+</html>
