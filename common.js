@@ -61,11 +61,12 @@ var getYMDHMSM = () => {
 var getDb = (key) => {
   //console.log(getYMDHMSM() + " : getDb start");
   return new Promise( async (resolve, reject) => {
+    let db = "";
     try {
       let openReq = indexedDB.open(getAppName());
       openReq.onsuccess = async (event) => {
         try {
-          let db = event.target.result;
+          db = event.target.result;
           let store = db.transaction(getOsName(), "readonly").objectStore(getOsName());
           let getReq = await store.get(key);
           getReq.onsuccess = (event) => {
@@ -74,21 +75,26 @@ var getDb = (key) => {
               let res = event.target.result[key];
               //console.log(getYMDHMSM() + " : getDb success");
               //console.log(res);
-              resolve(res)
+              if (db != "") db.close(); // 接続解除
+              resolve(res);
             } catch {
               //console.log(getYMDHMSM() + " : getDb data error");
+              if (db != "") db.close(); // 接続解除
               reject();
             }
           }
           getReq.onerror = (event) => {
             //console.log(getYMDHMSM() + " : getDb error");
+            if (db != "") db.close(); // 接続解除
             reject();
           }
         } catch {
+          if (db != "") db.close(); // 接続解除
           reject();
         }
       }
     } catch {
+      if (db != "") db.close(); // 接続解除
       reject();
     }
   });
@@ -100,11 +106,12 @@ var setDb = (key, value) => {
   //console.log(key);
   //console.log(value);
   return new Promise( async (resolve, reject) => {
+    let db = "";
     try {
       let openReq = indexedDB.open(getAppName());
       openReq.onsuccess = async (event) => {
         try {
-          let db = event.target.result;
+          db = event.target.result;
           let store = db.transaction(getOsName(), "readwrite").objectStore(getOsName());
           let osData = {};
           osData["key"] = key;
@@ -114,18 +121,22 @@ var setDb = (key, value) => {
           let putReq = await store.put(osData);
           putReq.onsuccess = (event) => {
             //console.log(getYMDHMSM() + " : setDb success");
+            if (db != "") db.close(); // 接続解除
             resolve();
           }
           putReq.onerror = (event) => {
             //console.log(getYMDHMSM() + " : setDb error");
+            if (db != "") db.close(); // 接続解除
             reject();
           }
         } catch(e) {
           //console.log(getYMDHMSM() + " : setDb error - " + e);
+          if (db != "") db.close(); // 接続解除
           reject();
         }
       }
     } catch {
+      if (db != "") db.close(); // 接続解除
       reject();
     }
   });
@@ -187,13 +198,49 @@ var swLogger = async (value) => {
   }
 }
 
-//ログ溜め込み
-var logger = async (who, log) => {
+//ログ溜め込み(sw/dom分割版)
+var loggerSplit = async (who, log) => {
   let value = getYMDHMSM() + "|" + who + "|" + log + "<br>";
   let key = who + "Log";
   if (who == "sw") {
     swLogger(value);
   } else {
     domLogger(value);
+  }
+}
+
+//ログ溜め込み
+var glovalLog = "";
+var logger = async (who, log) => {
+  let value = getYMDHMSM() + "|" + who + "|" + log + "<br>";
+  glovalLog = glovalLog + value;
+  //console.log(getYMDHMSM() + " : logger start - " + glovalLog);
+  try {
+    await getDb("htmlLog").then( async (nowValue) => {
+      if (nowValue) {
+        let newValue = nowValue + glovalLog;
+        await setDb("htmlLog", newValue).then(()=>{
+          glovalLog = "";
+          //console.log(getYMDHMSM() + " : logger success (get success)");
+        }).catch(()=>{
+          //console.log(getYMDHMSM() + " : logger warning (get success bat setfail) - " + glovalLog);
+          console.log(getYMDHMSM() + " : logger warning (get success bat setfail) - " + log);
+        });
+      } else {
+        //console.log(getYMDHMSM() + " : logger warning (get success bat valueExeption) - " + glovalLog);
+        console.log(getYMDHMSM() + " : logger warning (get success bat valueExeption) - " + log);
+      }
+    }).catch( async () => {
+      await setDb("htmlLog", value).then(()=>{
+        glovalLog = "";
+        console.log(getYMDHMSM() + " : logger success (get error to first set)");
+      }).catch(()=>{
+        //console.log(getYMDHMSM() + " : logger warning (get error to set error) - " + glovalLog);
+        console.log(getYMDHMSM() + " : logger warning (get error to set error) - " + log);
+      });
+    });
+  } catch {
+    //console.log(getYMDHMSM() + " : logger error - " + glovalLog);
+    console.log(getYMDHMSM() + " : logger error - " + log);
   }
 }

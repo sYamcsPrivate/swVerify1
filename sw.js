@@ -2,7 +2,7 @@
 importScripts('common.js');
 
 //バージョン
-const VERSION_APP = "0.0.4.060";
+const VERSION_APP = "0.0.5.001";
 const VERSION_DB = 1; //indexedDBのバージョンはint型、及び上げることはできても下げれない模様
 
 //キャッシュ名、キャッシュアイテム
@@ -18,7 +18,8 @@ let forDb = () => {
     let db;
 
     //DB名を指定して接続。DBがなければ新規作成。
-    let openReq  = indexedDB.open(getAppName(), VERSION_DB);
+    //let openReq  = indexedDB.open(getAppName(), VERSION_DB);
+    let openReq  = indexedDB.open(getAppName());
 
     //DBのバージョン更新(DBの新規作成も含む)時
     openReq.onupgradeneeded = (event) => {

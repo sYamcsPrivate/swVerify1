@@ -534,8 +534,9 @@ app.page
         <li class="btn menu-btn" id="app-reload">Reload</li>
         <li class="btn menu-btn" id="app-logview">LogView</li>
         <li class="btn menu-btn" id="app-logdel">LogDel</li>
-        <li class="btn menu-btn" id="app-dbdel">DbDel</li>
         <li class="btn menu-btn" id="app-swdel">SwDel</li>
+        <li class="btn menu-btn" id="app-dbdel">DbDel</li>
+        <li class="btn menu-btn" id="app-dbup">DbUp</li>
         <li class="btn menu-btn" id="app-ccdel">CacheDel</li>
         <li class="btn menu-btn" id="app-ccup">CacheUp</li>
       </ul>
@@ -593,6 +594,16 @@ let bottomScroll = () => {
   el.scroll(0, bottom);
 }
 let logViewFunc = async () => {
+  await getDb("htmlLog").then ( async (htmlLog) => {
+    document.getElementById("elLog").innerHTML = htmlLog;
+  }).catch(() => {
+    logger("dom","getDb(htmlLog) fail");
+    console.log(getYMDHMSM() + " : getDb(htmlLog) fail");
+  });
+}
+
+//ログ表示(sw/dom分割版)
+let logViewSplitFunc = async () => {
   let htmlLog = "";
   await getDb("swLog").then ( async (swLog) => {
     htmlLog = htmlLog + swLog;
@@ -631,8 +642,9 @@ document.getElementById("app-logview").addEventListener("click", async () => {
 });
 
 document.getElementById("app-logdel").addEventListener("click", async () => {
-  await setDb("swLog",getYMDHMSM() + "|dom|swLog-Initialize<br>");
-  await setDb("domLog",getYMDHMSM() + "|dom|domLog-Initialize<br>");
+  //await setDb("swLog",getYMDHMSM() + "|dom|swLog-Initialize<br>");
+  //await setDb("domLog",getYMDHMSM() + "|dom|domLog-Initialize<br>");
+  await setDb("htmlLog",getYMDHMSM() + "|dom|htmlLog-Initialize<br>");
   await logViewFunc();
   modalArea.classList.toggle('is-show');
   bottomScroll();
@@ -649,6 +661,39 @@ document.getElementById("app-dbdel").addEventListener("click", () => {
     logger("dom","DB削除失敗");
     console.log(getYMDHMSM() + " : dom|DB削除失敗");
   }
+});
+
+dbUpFunc = () => {
+  let db;
+  let dbVersion;
+  let openReq  = indexedDB.open(getAppName());
+  openReq.onsuccess = (event) => {
+    db = event.target.result;
+    dbVersion = db.version + 1;
+    db.close();
+
+    let openReq  = indexedDB.open(getAppName(), dbVersion);
+    //DBのバージョン更新
+    openReq.onupgradeneeded = (event) => {
+      logger("dom","db upgrade try");
+      console.log(getYMDHMSM() + " : db upgrade try");
+      db = event.target.result;
+      try {
+        db.createObjectStore(getOsName(), { keyPath: getKeyPathName() });
+        logger("dom","db upgrade success");
+        console.log(getYMDHMSM() + " : db upgrade success");
+      } catch(e) {
+        logger("dom","db upgrade fail - " + e);
+        console.log(getYMDHMSM() + " : db upgrade fail - " + e);
+      }
+      db.close();
+    };
+
+  }
+}
+document.getElementById("app-dbup").addEventListener("click", () => {
+  logger("dom","app-dbup");
+  dbUpFunc();
 });
 
 document.getElementById("app-swdel").addEventListener("click", () => {
@@ -994,6 +1039,7 @@ let appInit = () => {
   console.log(getYMDHMSM() + " : appInit start");
   return new Promise( async (resolve) => {
     //ここで諸々のアプリ起動準備を実施
+    dbUpFunc();
     menuInit();
     resolve();
   });
