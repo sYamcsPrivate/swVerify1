@@ -283,12 +283,14 @@ app.page
 <style>
 
 #app-body {
-  position: relative;
+  position: fixed;
   transform: scale(0.7);
-  top: -10px;
-  left: -21.5%;
-  width: 143%;
-  height: 143%;
+  top: -20.5%;
+  left: -20%;
+  width: 140%;
+  height: 140%;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
 }
 
 /* メニュー起動ボタンここから */
@@ -498,10 +500,7 @@ app.page
 
 
 <div id="app-body">
-ここからログをぶわっと出す予定ー<br>
-<br>
-<br>
-<br>
+<span id="elLog"></span>
 </div>
 
 <div id="app-menu-menuBtn-base">
@@ -531,8 +530,9 @@ app.page
     <div id="modalContents">
       <h1>Menu</h1>
       <ul class="menu-btn-body">
-        <li class="btn menu-btn" id="app-gotoInstall">Install</li>
+        <li class="btn menu-btn" id="app-logview">LogView</li>
         <li class="btn menu-btn" id="app-reload">Reload</li>
+        <li class="btn menu-btn" id="app-gotoInstall">Install</li>
       </ul>
 アプリを更新するには2回reloadする必要あり！<br>
     </div>
@@ -550,7 +550,9 @@ menuInit = async () => {
   //バージョン取得と設定
   await getCache("versionApp").then ( (ver) => {
     document.getElementById("version").innerText = ver;  
-  })
+  }).catch(() => {
+    console.log(getYMDHMSM() + " : getCache fail");
+  });
 
   //モーダル準備
   const modalArea = document.getElementById('modalArea');
@@ -559,16 +561,37 @@ menuInit = async () => {
   const modalBg = document.getElementById('modalBg');
   const toggle = [openModal,closeModal,modalBg];
     for(let i=0, len=toggle.length ; i<len ; i++){
-    console.log(getYMDHMSM() + " : modal display");
-    console.log(toggle[i]);
+    //console.log(getYMDHMSM() + " : modal display");
+    //console.log(toggle[i]);
     toggle[i].addEventListener('click', () => {
-      console.log(getYMDHMSM() + " : modal toggle");
+      logger("modal toggle");
+      //console.log(getYMDHMSM() + " : modal toggle");
       modalArea.classList.toggle('is-show');
     },false);
   }
 
+  //DBから過去logの取得と設定
+  //logger("forTest");
+  //logger("forTest2");
+  await logViewFunc();
+
   return;
 };
+
+logViewFunc = async () => {
+  await getDb("htmlLog").then ( (htmlLog) => {
+    //let innerHtmlLog = "<span id='elLog'>" + htmlLog + "</span>";
+    //document.getElementById("elLog").innerHTML = innerHtmlLog;
+    document.getElementById("elLog").innerHTML = htmlLog;
+    modalArea.classList.toggle('is-show');
+  }).catch(() => {
+    console.log(getYMDHMSM() + " : getDb(htmlLog) fail");
+  });
+}
+
+document.getElementById("app-logview").addEventListener("click", async () => {
+  await logViewFunc();
+});
 
 document.getElementById("app-reload").addEventListener("click", () => {
   location.reload(false); //true:サーバから再読込/false:キャッシュから再読込
@@ -821,7 +844,7 @@ let forDb = () => {
       openReq.onupgradeneeded = (event) => {
         console.log(getYMDHMSM() + " : db create/upgrade");
         db = event.target.result;
-        db.createObjectStore(osName(), { keyPath: "id" }); //オブジェクトストア作成
+        db.createObjectStore(getOsName(), { keyPath: getKeyPathName() }); //オブジェクトストア作成
       }
 
       //onupgradeneeded後(更新がない場合はここのみが動く
@@ -829,42 +852,6 @@ let forDb = () => {
         console.log(getYMDHMSM() + " : db open success");
         db = event.target.result;
         db.close(); // 接続解除
-
-        //for test - start
-
-        await getDb().then((obj) => {
-          console.log(getYMDHMSM() + " : test 1stGet succcess");
-          console.log(obj);
-        }).catch( async () => {
-          console.log(getYMDHMSM() + " : test 1stGet error");
-          let sLog = getYMDHMSM() + " : testlog1<br>";
-          await setDb(sLog).then(() => {
-            getDb().then( async (obj) => {
-              console.log(getYMDHMSM() + " : test 2ndGet succcess");
-              console.log(obj);
-
-              console.log(getYMDHMSM() + " : ModTest start");
-              obj = await getDb();
-              sLog = obj + getYMDHMSM() + " : testlog2<br>";
-              console.log(getYMDHMSM() + " : setDbに渡す前のsLogの内容↓");
-              console.log(sLog);
-              await setDb(sLog);
-
-              await getDb().then((obj) => {
-                console.log(getYMDHMSM() + " : test 3rdGet succcess");
-                console.log(obj);
-              }).catch(() => {
-                console.log(getYMDHMSM() + " : test 3rdGet error");
-              })
-
-            }).catch(() => {
-              console.log(getYMDHMSM() + " : test 2ndGet error");
-            })
-          })
-        })
-
-        //for test - end
-
         resolve();
       }
 

@@ -2,7 +2,7 @@
 importScripts('common.js');
 
 //バージョン
-const VERSION_APP = "0.0.4.001";
+const VERSION_APP = "0.0.4.030";
 const VERSION_DB = 1; //indexedDBのバージョンはint型、及び上げることはできても下げれない模様
 
 //キャッシュ名、キャッシュアイテム
@@ -96,12 +96,14 @@ offlineResHeaders = () => {
 
 //インストール
 const install = (event) => {
+  logger("sw |install/update start");
   console.log(getYMDHMSM() + " : install/update start");
   return event.waitUntil(
     caches.open(CACHE_NAME).then(cache => {
       CACHE_ITEMS.map(url => {
         return fetch(new Request(url)).then(response => {
           cloneRes = response.clone(); //クローンしてキャッシュ
+          logger("sw |cachePut :" + cloneRes.url);
           console.log(getYMDHMSM() + " : cachePut :" + cloneRes.url);
           return cache.put(url, cloneRes);
         });
