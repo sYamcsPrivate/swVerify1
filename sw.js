@@ -2,12 +2,51 @@
 importScripts('common.js');
 
 //バージョン
-const VERSION_APP = "0.0.4.030";
+const VERSION_APP = "0.0.4.043";
 const VERSION_DB = 1; //indexedDBのバージョンはint型、及び上げることはできても下げれない模様
 
 //キャッシュ名、キャッシュアイテム
 const CACHE_NAME = `${registration.scope}!${VERSION_APP}`;
 const CACHE_ITEMS = getCacheItems();
+
+//db作成
+let forDb = () => {
+  console.log(getYMDHMSM() + " : forDb start");
+  return new Promise( async (resolve, reject) => {
+
+    //データベース
+    let db;
+
+    //DB名を指定して接続。DBがなければ新規作成。
+    let openReq  = indexedDB.open(getAppName(), VERSION_DB);
+
+    //DBのバージョン更新(DBの新規作成も含む)時
+    openReq.onupgradeneeded = (event) => {
+      console.log(getYMDHMSM() + " : db create/upgrade");
+      db = event.target.result;
+      db.createObjectStore(getOsName(), { keyPath: getKeyPathName() }); //オブジェクトストア作成
+    };
+
+    //onupgradeneeded後(更新がない場合はここのみが動く
+    openReq.onsuccess = async (event) => {
+      console.log(getYMDHMSM() + " : db open success");
+      db = event.target.result;
+      db.close(); // 接続解除
+      resolve();
+    };
+
+    //DB接続失敗時
+    openReq.onerror = (event) => {
+      console.log(getYMDHMSM() + " : db open error");
+      reject();
+    };
+
+  });
+}
+//上記関数をawait(同期型)で実施
+( async () => {
+  await forDb();
+})()
 
 //エラー時のレスポンスDOM
 offlineResBody = () => {
@@ -96,14 +135,14 @@ offlineResHeaders = () => {
 
 //インストール
 const install = (event) => {
-  logger("sw |install/update start");
+  logger("sw|install/update start");
   console.log(getYMDHMSM() + " : install/update start");
   return event.waitUntil(
     caches.open(CACHE_NAME).then(cache => {
       CACHE_ITEMS.map(url => {
         return fetch(new Request(url)).then(response => {
           cloneRes = response.clone(); //クローンしてキャッシュ
-          logger("sw |cachePut :" + cloneRes.url);
+          logger("sw|cachePut :" + cloneRes.url);
           console.log(getYMDHMSM() + " : cachePut :" + cloneRes.url);
           return cache.put(url, cloneRes);
         });
@@ -114,6 +153,7 @@ const install = (event) => {
       console.log(getYMDHMSM() + " : install/update fail");
       console.log(err);
     }).finally(() => {
+      logger("sw|skipWaiting");
       console.log(getYMDHMSM() + " : skipWaiting");
       self.skipWaiting();
     })
@@ -122,17 +162,20 @@ const install = (event) => {
 
 //インストール時に発火
 self.addEventListener('install', (event) => {
+  logger("sw|ServiceWorkerインストール");
   console.log(getYMDHMSM() + " : ServiceWorkerインストール");
   install(event);
 });
 
 //新しいバージョンのServiceWorkerが有効化されたとき
 self.addEventListener('activate', (event) => {
+  logger("sw|ServiceWorker有効化");
   console.log(getYMDHMSM() + " : ServiceWorker有効化");
   event.waitUntil(
     caches.keys().then((cacheNames) => {
       return cacheNames.filter((cacheName) => {
         // このスコープに所属していて且つCACHE_NAMEではないキャッシュを探す
+        logger("sw|不要キャッシュ探索");
         console.log(getYMDHMSM() + " : 不要キャッシュ探索");
         return cacheName.startsWith(`${registration.scope}!`) &&
                cacheName !== CACHE_NAME;
@@ -140,10 +183,12 @@ self.addEventListener('activate', (event) => {
     }).then((cachesToDelete) => {
       return Promise.all(cachesToDelete.map((cacheName) => {
         // いらないキャッシュを削除する
+        logger("sw|不要キャッシュ削除");
         console.log(getYMDHMSM() + " : 不要キャッシュ削除");
         return caches.delete(cacheName);
       }));
     }).finally(() => {
+      logger("sw|ServiceWorkerコントロール開始");
       console.log(getYMDHMSM() + " : ServiceWorkerコントロール開始");
       self.clients.claim();
     })
@@ -152,6 +197,7 @@ self.addEventListener('activate', (event) => {
 
 //メッセージ受信
 self.addEventListener('message', (event) => {
+  logger("sw|メッセージ受信:" + JSON.stringify(event.data));
   console.log(`${getYMDHMSM()} : sw:onMessage:${JSON.stringify(event.data)}`);
   switch (event.data.func) {
     case 'updateCache': //キャッシュ更新リクエスト
@@ -166,6 +212,7 @@ self.addEventListener('message', (event) => {
 //フェッチ処理：キャッシュ優先取得
 self.addEventListener('fetch', (event) => {
 
+  logger("sw|fetch開始 : " + event.request.url);
   console.log(getYMDHMSM() + " : fetch開始 : " + event.request.url);
 
   //キャッシュ優先で取得
@@ -175,6 +222,7 @@ self.addEventListener('fetch', (event) => {
 
         // キャッシュ内に該当レスポンスがあれば、それを返す
         if (response) {
+          logger("sw|from cache : " + response.url);
           console.log(getYMDHMSM() + " : from cache : " + response.url);
           return response;
         }
@@ -186,6 +234,7 @@ self.addEventListener('fetch', (event) => {
 
         return fetch(fetchRequest).then((response) => {
 
+          logger("sw|from net : " + response.url);
           console.log(getYMDHMSM() + " : from net : " + response.url);
 
           if (!response || response.status !== 200 || response.type !== 'basic') {
@@ -211,4 +260,5 @@ self.addEventListener('fetch', (event) => {
 
 });
 
-console.log(getYMDHMSM() + " : ここまで読んでるかチェック4");
+logger("sw|ここまで読み込めてるかチェック");
+console.log(getYMDHMSM() + " : ここまで読んでるかチェック");
