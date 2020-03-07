@@ -2,7 +2,7 @@
 importScripts('common.js');
 
 //バージョン
-const VERSION_APP = "0.0.4.043";
+const VERSION_APP = "0.0.4.060";
 const VERSION_DB = 1; //indexedDBのバージョンはint型、及び上げることはできても下げれない模様
 
 //キャッシュ名、キャッシュアイテム
@@ -135,14 +135,14 @@ offlineResHeaders = () => {
 
 //インストール
 const install = (event) => {
-  logger("sw|install/update start");
+  logger("sw","install/update start");
   console.log(getYMDHMSM() + " : install/update start");
   return event.waitUntil(
     caches.open(CACHE_NAME).then(cache => {
       CACHE_ITEMS.map(url => {
         return fetch(new Request(url)).then(response => {
           cloneRes = response.clone(); //クローンしてキャッシュ
-          logger("sw|cachePut :" + cloneRes.url);
+          logger("sw","cachePut :" + cloneRes.url);
           console.log(getYMDHMSM() + " : cachePut :" + cloneRes.url);
           return cache.put(url, cloneRes);
         });
@@ -153,7 +153,7 @@ const install = (event) => {
       console.log(getYMDHMSM() + " : install/update fail");
       console.log(err);
     }).finally(() => {
-      logger("sw|skipWaiting");
+      logger("sw","skipWaiting");
       console.log(getYMDHMSM() + " : skipWaiting");
       self.skipWaiting();
     })
@@ -162,20 +162,20 @@ const install = (event) => {
 
 //インストール時に発火
 self.addEventListener('install', (event) => {
-  logger("sw|ServiceWorkerインストール");
+  logger("sw","ServiceWorkerインストール");
   console.log(getYMDHMSM() + " : ServiceWorkerインストール");
   install(event);
 });
 
 //新しいバージョンのServiceWorkerが有効化されたとき
 self.addEventListener('activate', (event) => {
-  logger("sw|ServiceWorker有効化");
+  logger("sw","ServiceWorker有効化");
   console.log(getYMDHMSM() + " : ServiceWorker有効化");
   event.waitUntil(
     caches.keys().then((cacheNames) => {
       return cacheNames.filter((cacheName) => {
         // このスコープに所属していて且つCACHE_NAMEではないキャッシュを探す
-        logger("sw|不要キャッシュ探索");
+        logger("sw","不要キャッシュ探索");
         console.log(getYMDHMSM() + " : 不要キャッシュ探索");
         return cacheName.startsWith(`${registration.scope}!`) &&
                cacheName !== CACHE_NAME;
@@ -183,12 +183,12 @@ self.addEventListener('activate', (event) => {
     }).then((cachesToDelete) => {
       return Promise.all(cachesToDelete.map((cacheName) => {
         // いらないキャッシュを削除する
-        logger("sw|不要キャッシュ削除");
+        logger("sw","不要キャッシュ削除");
         console.log(getYMDHMSM() + " : 不要キャッシュ削除");
         return caches.delete(cacheName);
       }));
     }).finally(() => {
-      logger("sw|ServiceWorkerコントロール開始");
+      logger("sw","ServiceWorkerコントロール開始");
       console.log(getYMDHMSM() + " : ServiceWorkerコントロール開始");
       self.clients.claim();
     })
@@ -197,7 +197,7 @@ self.addEventListener('activate', (event) => {
 
 //メッセージ受信
 self.addEventListener('message', (event) => {
-  logger("sw|メッセージ受信:" + JSON.stringify(event.data));
+  logger("sw","メッセージ受信:" + JSON.stringify(event.data));
   console.log(`${getYMDHMSM()} : sw:onMessage:${JSON.stringify(event.data)}`);
   switch (event.data.func) {
     case 'updateCache': //キャッシュ更新リクエスト
@@ -212,7 +212,7 @@ self.addEventListener('message', (event) => {
 //フェッチ処理：キャッシュ優先取得
 self.addEventListener('fetch', (event) => {
 
-  logger("sw|fetch開始 : " + event.request.url);
+  logger("sw","fetch開始 : " + event.request.url);
   console.log(getYMDHMSM() + " : fetch開始 : " + event.request.url);
 
   //キャッシュ優先で取得
@@ -222,7 +222,7 @@ self.addEventListener('fetch', (event) => {
 
         // キャッシュ内に該当レスポンスがあれば、それを返す
         if (response) {
-          logger("sw|from cache : " + response.url);
+          logger("sw","from cache : " + response.url);
           console.log(getYMDHMSM() + " : from cache : " + response.url);
           return response;
         }
@@ -234,7 +234,7 @@ self.addEventListener('fetch', (event) => {
 
         return fetch(fetchRequest).then((response) => {
 
-          logger("sw|from net : " + response.url);
+          logger("sw","from net : " + response.url);
           console.log(getYMDHMSM() + " : from net : " + response.url);
 
           if (!response || response.status !== 200 || response.type !== 'basic') {
@@ -260,5 +260,5 @@ self.addEventListener('fetch', (event) => {
 
 });
 
-logger("sw|ここまで読み込めてるかチェック");
+logger("sw","ここまで読み込めてるかチェック");
 console.log(getYMDHMSM() + " : ここまで読んでるかチェック");

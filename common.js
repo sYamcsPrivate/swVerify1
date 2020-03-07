@@ -97,6 +97,8 @@ var getDb = (key) => {
 //db更新新設(indexedDBに固定オブジェクトストア名＋指定keyで情報格納)
 var setDb = (key, value) => {
   //console.log(getYMDHMSM() + " : setDb start");
+  //console.log(key);
+  //console.log(value);
   return new Promise( async (resolve, reject) => {
     try {
       let openReq = indexedDB.open(getAppName());
@@ -118,7 +120,8 @@ var setDb = (key, value) => {
             //console.log(getYMDHMSM() + " : setDb error");
             reject();
           }
-        } catch {
+        } catch(e) {
+          //console.log(getYMDHMSM() + " : setDb error - " + e);
           reject();
         }
       }
@@ -128,38 +131,69 @@ var setDb = (key, value) => {
   });
 }
 
-//ログ溜め込み
-var glovalLog = "";
-var logger = async (log) => {
-  let value = getYMDHMSM() + "|" + log + "<br>";
-  glovalLog = glovalLog + value;
-  //console.log(getYMDHMSM() + " : logger start - " + glovalLog);
+//domログ溜め込み
+var globalDomLog = "";
+var domLogger = async (value) => {
+  globalDomLog = globalDomLog + value;
   try {
-    await getDb("htmlLog").then( async (nowValue) => {
+    await getDb("domLog").then( async (nowValue) => {
       if (nowValue) {
-        let newValue = nowValue + glovalLog;
-        await setDb("htmlLog", newValue).then(()=>{
-          glovalLog = "";
-          //console.log(getYMDHMSM() + " : logger success (get success)");
+        await setDb("domLog", nowValue + globalDomLog).then(()=>{
+          globalDomLog = "";
         }).catch(()=>{
-          //console.log(getYMDHMSM() + " : logger warning (get success bat setfail) - " + glovalLog);
-          console.log(getYMDHMSM() + " : logger warning (get success bat setfail) - " + log);
+          console.log(getYMDHMSM() + " : domlogger warning (get success bat setfail) - " + value);
         });
       } else {
-        //console.log(getYMDHMSM() + " : logger warning (get success bat valueExeption) - " + glovalLog);
-        console.log(getYMDHMSM() + " : logger warning (get success bat valueExeption) - " + log);
+        console.log(getYMDHMSM() + " : domlogger warning (get success bat valueExeption) - " + value);
       }
     }).catch( async () => {
-      await setDb("htmlLog", value).then(()=>{
-        glovalLog = "";
-        console.log(getYMDHMSM() + " : logger success (get error to first set)");
+      await setDb("domLog", value).then(()=>{
+        globalDomLog = "";
+        //console.log(getYMDHMSM() + " : domlogger success (get error to first set)");
       }).catch(()=>{
-        //console.log(getYMDHMSM() + " : logger warning (get error to set error) - " + glovalLog);
-        console.log(getYMDHMSM() + " : logger warning (get error to set error) - " + log);
+        console.log(getYMDHMSM() + " : domlogger warning (get error to set error) - " + value);
       });
     });
   } catch {
-    //console.log(getYMDHMSM() + " : logger error - " + glovalLog);
-    console.log(getYMDHMSM() + " : logger error - " + log);
+    console.log(getYMDHMSM() + " : domlogger error - " + value);
+  }
+}
+
+//swログ溜め込み
+var globalSwLog = "";
+var swLogger = async (value) => {
+  globalSwLog = globalSwLog + value;
+  try {
+    await getDb("swLog").then( async (nowValue) => {
+      if (nowValue) {
+        await setDb("swLog", nowValue + globalSwLog).then(()=>{
+          globalSwLog = "";
+        }).catch(()=>{
+          console.log(getYMDHMSM() + " : swlogger warning (get success bat setfail) - " + value);
+        });
+      } else {
+        console.log(getYMDHMSM() + " : swlogger warning (get success bat valueExeption) - " + value);
+      }
+    }).catch( async () => {
+      await setDb("swLog", value).then(()=>{
+        globalSwLog = "";
+        //console.log(getYMDHMSM() + " : swlogger success (get error to first set)");
+      }).catch(()=>{
+        console.log(getYMDHMSM() + " : swlogger warning (get error to set error) - " + value);
+      });
+    });
+  } catch {
+    console.log(getYMDHMSM() + " : swlogger error - " + value);
+  }
+}
+
+//ログ溜め込み
+var logger = async (who, log) => {
+  let value = getYMDHMSM() + "|" + who + "|" + log + "<br>";
+  let key = who + "Log";
+  if (who == "sw") {
+    swLogger(value);
+  } else {
+    domLogger(value);
   }
 }
