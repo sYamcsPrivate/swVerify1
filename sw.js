@@ -1,11 +1,13 @@
 //外部ファイル読込
 importScripts('common.js');
 
-//キャッシュ名、キャッシュアイテム
-const CACHE_VERSION = "0.0.3.001";
-const CACHE_NAME = `${registration.scope}!${CACHE_VERSION}`;
-const CACHE_ITEMS = getCacheItems();
+//バージョン
+const VERSION_APP = "0.0.4.001";
+const VERSION_DB = 1; //indexedDBのバージョンはint型、及び上げることはできても下げれない模様
 
+//キャッシュ名、キャッシュアイテム
+const CACHE_NAME = `${registration.scope}!${VERSION_APP}`;
+const CACHE_ITEMS = getCacheItems();
 
 //エラー時のレスポンスDOM
 offlineResBody = () => {
@@ -104,6 +106,8 @@ const install = (event) => {
           return cache.put(url, cloneRes);
         });
       });
+      cache.put("./versionApp",new Response(VERSION_APP));
+      cache.put("./versionDb",new Response(VERSION_DB));
     }).catch(err => {
       console.log(getYMDHMSM() + " : install/update fail");
       console.log(err);
@@ -150,10 +154,6 @@ self.addEventListener('message', (event) => {
   switch (event.data.func) {
     case 'updateCache': //キャッシュ更新リクエスト
       event.source.postMessage({func:event.data.func, data:""});
-      install(event);
-      break;
-    case 'getVersion': //バージョン取得リクエスト
-      event.source.postMessage({func:event.data.func, data:CACHE_VERSION});
       install(event);
       break;
     default:

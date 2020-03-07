@@ -534,44 +534,7 @@ app.page
         <li class="btn menu-btn" id="app-gotoInstall">Install</li>
         <li class="btn menu-btn" id="app-reload">Reload</li>
       </ul>
-アプリ更新には2回reloadする必要があるので注意！<br>
-aaa<br>
-aaa<br>
-aaa<br>
-aaa<br>
-aaa<br>
-aaa<br>
-aaa<br>
-aaa<br>
-aaa<br>
-aaa<br>
-aaa<br>
-aaa<br>
-aaa<br>
-aaa<br>
-aaa<br>
-aaa<br>
-aaa<br>
-aaa<br>
-aaa<br>
-aaa<br>
-aaa<br>
-aaa<br>
-aaa<br>
-aaa<br>
-aaa<br>
-aaa<br>
-aaa<br>
-aaa<br>
-aaa<br>
-aaa<br>
-aaa<br>
-aaa<br>
-aaa<br>
-aaa<br>
-aaa<br>
-aaa<br>
-aaa<br>
+アプリを更新するには2回reloadする必要あり！<br>
     </div>
   </div>
 </section>
@@ -581,15 +544,21 @@ aaa<br>
 
 <script type="text/javascript">
 
-menuInit = () => {
+menuInit = async () => {
   console.log(getYMDHMSM() + " : menuInit start");
+  
+  //バージョン取得と設定
+  await getCache("versionApp").then ( (ver) => {
+    document.getElementById("version").innerText = ver;  
+  })
+
+  //モーダル準備
   const modalArea = document.getElementById('modalArea');
   const openModal = document.getElementById('app-menu-menuBtn');
   const closeModal = document.getElementById('closeModal');
   const modalBg = document.getElementById('modalBg');
   const toggle = [openModal,closeModal,modalBg];
-  
-  for(let i=0, len=toggle.length ; i<len ; i++){
+    for(let i=0, len=toggle.length ; i<len ; i++){
     console.log(getYMDHMSM() + " : modal display");
     console.log(toggle[i]);
     toggle[i].addEventListener('click', () => {
@@ -597,6 +566,7 @@ menuInit = () => {
       modalArea.classList.toggle('is-show');
     },false);
   }
+
   return;
 };
 
@@ -727,13 +697,6 @@ let readySw = () => {
             console.log(`${getYMDHMSM()} : dom:switch:${event.data.func}`);
             alert("キャッシュの更新をお願いします。");
             break;
-          case 'getVersion': //バージョン取得リクエスト
-            console.log(`${getYMDHMSM()} : dom:switch:${event.data.func}`);
-            let verEl = document.createElement("span");
-            verEl.setAttribute("id", "version");
-            verEl.textContent = "version : " + event.data.data;
-            document.getElementById("version").innerText = event.data.data;
-            break;
           default:
             break;
         }
@@ -831,6 +794,92 @@ let forSw = () => {
 
 /*
 ----------------------------------------
+indexedDB関連
+----------------------------------------
+*/
+
+//db関連
+let forDb = () => {
+  console.log(getYMDHMSM() + " : forDb start");
+  return new Promise( async (resolve, reject) => {
+    let wIndexedDB = window.indexedDB || window.mozIndexedDB || window.webkitIndexedDB || window.msIndexedDB;
+    if (!wIndexedDB) {
+      console.log(getYMDHMSM() + " : indexedDB Cannot Use");
+      reject();
+    } else {
+
+      //データベース
+      let db;
+
+      //新バージョン取得
+      let newVer = await getCache("versionDb").then ( (ver) => parseInt(ver, 10) );
+
+      //DB名を指定して接続。DBがなければ新規作成。
+      let openReq  = indexedDB.open(getAppName(), newVer);
+
+      //DBのバージョン更新(DBの新規作成も含む)時
+      openReq.onupgradeneeded = (event) => {
+        console.log(getYMDHMSM() + " : db create/upgrade");
+        db = event.target.result;
+        db.createObjectStore(osName(), { keyPath: "id" }); //オブジェクトストア作成
+      }
+
+      //onupgradeneeded後(更新がない場合はここのみが動く
+      openReq.onsuccess = async (event) => {
+        console.log(getYMDHMSM() + " : db open success");
+        db = event.target.result;
+        db.close(); // 接続解除
+
+        //for test - start
+
+        await getDb().then((obj) => {
+          console.log(getYMDHMSM() + " : test 1stGet succcess");
+          console.log(obj);
+        }).catch( async () => {
+          console.log(getYMDHMSM() + " : test 1stGet error");
+          let sLog = getYMDHMSM() + " : testlog1<br>";
+          await setDb(sLog).then(() => {
+            getDb().then( async (obj) => {
+              console.log(getYMDHMSM() + " : test 2ndGet succcess");
+              console.log(obj);
+
+              console.log(getYMDHMSM() + " : ModTest start");
+              obj = await getDb();
+              sLog = obj + getYMDHMSM() + " : testlog2<br>";
+              console.log(getYMDHMSM() + " : setDbに渡す前のsLogの内容↓");
+              console.log(sLog);
+              await setDb(sLog);
+
+              await getDb().then((obj) => {
+                console.log(getYMDHMSM() + " : test 3rdGet succcess");
+                console.log(obj);
+              }).catch(() => {
+                console.log(getYMDHMSM() + " : test 3rdGet error");
+              })
+
+            }).catch(() => {
+              console.log(getYMDHMSM() + " : test 2ndGet error");
+            })
+          })
+        })
+
+        //for test - end
+
+        resolve();
+      }
+
+      //DB接続失敗時
+      openReq.onerror = (event) => {
+        console.log(getYMDHMSM() + " : db open error");
+        reject();
+      }
+
+    }
+  });
+}
+
+/*
+----------------------------------------
 キャッシュチェック
 ----------------------------------------
 */
@@ -866,21 +915,6 @@ let chkCache = () => {
 
 /*
 ----------------------------------------
-バージョン取得
-----------------------------------------
-*/
-let getVersion = () => {
-  console.log(getYMDHMSM() + " : getVersion start");
-  return new Promise( async (resolve) => {
-    console.log(getYMDHMSM() + " : postMessage : getVersion");
-    registration = await navigator.serviceWorker.getRegistration();
-    await registration.active.postMessage({func:"getVersion", data:""});
-    resolve();
-  });
-};
-
-/*
-----------------------------------------
 アプリ準備
 ----------------------------------------
 */
@@ -904,11 +938,11 @@ let loadFunc = () => {
   //sw関連
   forSw()
 
+  //db関連
+  .then( () => forDb() )
+
   //キャッシュチェック
   .then( () => chkCache() )
-
-  //バージョン取得
-  .then( () => getVersion() )
 
   //アプリ初期処理
   .then( () => appInit() )
