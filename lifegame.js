@@ -19,7 +19,7 @@ lifeGameInit = () => {
     canvas = document.getElementById('lifegame');
     let base;
     let appWidth = document.getElementById('app-body').clientWidth;
-    let appHeight = document.getElementById('app-body').clientHeight - 47; //ボタン部分を除く
+    let appHeight = document.getElementById('app-body').clientHeight - 60; //ボタン部分を除く
 
     logger("dom","appWidth:" + appWidth + ",appHeight:" + appHeight);
     console.log(getYMDHMSM() + "|dom|appWidth:" + appWidth + ",appHeight:" + appHeight);
@@ -127,9 +127,9 @@ function nextGeneration(){
     cells = tmpCells;
     redraw();
 }
- 
-// 周囲の生存セルを数える
-function countAround(x, y){
+
+// 周囲の生存セルを数える - 有限版(Finite)
+function countAroundFinite(x, y){
     var count = 0;
     for(i=-1;i<=1;i++){
         for(j=-1;j<=1;j++){
@@ -144,11 +144,41 @@ function countAround(x, y){
     }
     return count;
 }
+
+// 周囲の生存セルを数える - 無限版(Infinite)
+function countAround(x, y){
+    var count = 0;
+    let provX = 0;
+    let provY = 0;
+    for(i=-1;i<=1;i++){
+        provX = x + i;
+        if (provX < 0) {
+            provX = cols - 1;
+        };
+        if (provX >= cols) {
+            provX = 0;
+        };
+        for(j=-1;j<=1;j++){
+            provY = y + j;
+            if (provY < 0) {
+                provY = rows - 1;
+            };
+            if (provY >= rows) {
+                provY = 0;
+            };
+            if (i != 0 || j != 0) {
+                count += cells[provX][provY];
+            };
+        }
+    }
+    return count;
+}
  
 // Canvasクリック
 function canvasClick(e){
-    var x = e.clientX - canvas.offsetLeft;
-    var y = e.clientY - canvas.offsetTop;
+    //上位で縮小表示しているためクリックした位置を縮小倍率で仮想算出
+    var x = (e.clientX / 0.7) - canvas.offsetLeft;
+    var y = (e.clientY / 0.7) - canvas.offsetTop;
     var col = Math.floor(x / cellSize);
     var row = Math.floor(y / cellSize);
     cells[col][row] = !cells[col][row];

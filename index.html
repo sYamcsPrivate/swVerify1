@@ -504,7 +504,7 @@ app.page
 <span id="elLog"></span>
 <span id="elLifeG" style="display:none;">
 
-  <div style="margin:0;">
+  <div style="margin: 2px 0;">
     <ul class="menu-btn-body">
       <li class="btn menu-btn" id="buttonRandom">Random</li>
       <li class="btn menu-btn" id="buttonStart">Start</li>
@@ -776,6 +776,7 @@ document.getElementById("app-logwatch").addEventListener("click", () => {
   document.getElementById('elLog').style.display = "block";
   document.getElementById('elLifeG').style.display = "none";
   bottomScroll();
+  modalArea.classList.toggle('is-show');
 });
 
 document.getElementById("app-lifegame").addEventListener("click", () => {
@@ -784,6 +785,7 @@ document.getElementById("app-lifegame").addEventListener("click", () => {
   lifeGameInit();
   document.getElementById('elLog').style.display = "none";
   document.getElementById('elLifeG').style.display = "block";
+  modalArea.classList.toggle('is-show');
 });
 
 </script>
