@@ -1,8 +1,8 @@
 //外部ファイル読込
-importScripts('common.js');
+importScripts('common.js', 'background.js');
 
 //バージョン
-const VERSION_APP = "0.0.5.001";
+const VERSION_APP = "0.0.6.003";
 const VERSION_DB = 1; //indexedDBのバージョンはint型、及び上げることはできても下げれない模様
 
 //キャッシュ名、キャッシュアイテム
@@ -204,6 +204,9 @@ self.addEventListener('message', (event) => {
     case 'updateCache': //キャッシュ更新リクエスト
       event.source.postMessage({func:event.data.func, data:""});
       install(event);
+      break;
+    case 'bgProc': //バックグラウンド処理リクエスト
+      bgProc();
       break;
     default:
       break;

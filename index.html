@@ -539,6 +539,7 @@ app.page
         <li class="btn menu-btn" id="app-dbup">DbUp</li>
         <li class="btn menu-btn" id="app-ccdel">CacheDel</li>
         <li class="btn menu-btn" id="app-ccup">CacheUp</li>
+        <li class="btn menu-btn" id="app-swreq">SwReq</li>
       </ul>
 アプリを更新するには2回reloadする必要あり！<br>
     </div>
@@ -745,6 +746,13 @@ document.getElementById("app-ccup").addEventListener("click", async () => {
   console.log("dom:postMessage:updateCache");
   registration = await navigator.serviceWorker.getRegistration();
   await registration.active.postMessage({func:"updateCache", data:""});
+});
+
+document.getElementById("app-swreq").addEventListener("click", async () => {
+  logger("dom","app-swreq");
+  console.log("dom:postMessage:bgProc");
+  registration = await navigator.serviceWorker.getRegistration();
+  await registration.active.postMessage({func:"bgProc", data:""});
 });
 
 </script>
