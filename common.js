@@ -14,6 +14,7 @@ var getKeyPathName = () => "key";
 
 //キャッシュアイテムズ ... sw.js自前で「./version」を組み込んでいる
 var getCacheItems = () => [
+  "./lifegame.js",
   "./background.js",
   "./icon-512x512.png",
   "./common.js",

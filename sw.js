@@ -2,7 +2,7 @@
 importScripts('common.js', 'background.js');
 
 //バージョン
-const VERSION_APP = "0.0.6.003";
+const VERSION_APP = "0.0.7.022";
 const VERSION_DB = 1; //indexedDBのバージョンはint型、及び上げることはできても下げれない模様
 
 //キャッシュ名、キャッシュアイテム

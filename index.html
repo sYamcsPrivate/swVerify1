@@ -7,6 +7,7 @@
   <link rel="apple-touch-icon" href="icon-512x512.png" sizes="512x512"/>
   <link rel="manifest" href="manifest.json">
   <script src="common.js"></script>
+  <script src="lifegame.js"></script>
   <style>
 .index {
   font-family: 游ゴシック体, 'Yu Gothic', YuGothic, 'ヒラギノ角ゴシック Pro', 'Hiragino Kaku Gothic Pro', メイリオ, Meiryo, Osaka, 'ＭＳ Ｐゴシック', 'MS PGothic', sans-serif;
@@ -45,8 +46,8 @@
   border:1px solid #1B1B1B;
 }
 .btn:hover  {
-  background: #1B1B1B;
-  color: #fff;
+  /* background: #1B1B1B;
+  color: #fff; */
   cursor: pointer;
   text-decoration: none;
 }
@@ -501,6 +502,18 @@ app.page
 
 <div id="app-body">
 <span id="elLog"></span>
+<span id="elLifeG" style="display:none;">
+
+  <div style="margin:0;">
+    <ul class="menu-btn-body">
+      <li class="btn menu-btn" id="buttonRandom">Random</li>
+      <li class="btn menu-btn" id="buttonStart">Start</li>
+      <li class="btn menu-btn" id="buttonReset">Reset</li>
+    </ul>
+  </div>
+  <canvas id="lifegame"></canvas>
+
+</span>
 </div>
 
 <div id="app-menu-menuBtn-base">
@@ -540,6 +553,8 @@ app.page
         <li class="btn menu-btn" id="app-ccdel">CacheDel</li>
         <li class="btn menu-btn" id="app-ccup">CacheUp</li>
         <li class="btn menu-btn" id="app-swreq">SwReq</li>
+        <li class="btn menu-btn" id="app-logwatch">LogWatch</li>
+        <li class="btn menu-btn" id="app-lifegame">LifeGame</li>
       </ul>
 アプリを更新するには2回reloadする必要あり！<br>
     </div>
@@ -599,7 +614,7 @@ let logViewFunc = async () => {
     document.getElementById("elLog").innerHTML = htmlLog;
   }).catch(() => {
     logger("dom","getDb(htmlLog) fail");
-    console.log(getYMDHMSM() + " : getDb(htmlLog) fail");
+    console.log(getYMDHMSM() + "|dom|getDb(htmlLog) fail");
   });
 }
 
@@ -614,11 +629,11 @@ let logViewSplitFunc = async () => {
       document.getElementById("elLog").innerHTML = htmlLog;
     }).catch(() => {
       logger("dom","getDb(domLog) fail");
-      console.log(getYMDHMSM() + " : getDb(domLog) fail");
+      console.log(getYMDHMSM() + "|dom|getDb(domLog) fail");
     });
   }).catch(() => {
     logger("dom","getDb(swLog) fail");
-    console.log(getYMDHMSM() + " : getDb(swLog) fail");
+    console.log(getYMDHMSM() + "|dom|getDb(swLog) fail");
   });
 }
 
@@ -656,11 +671,11 @@ document.getElementById("app-dbdel").addEventListener("click", () => {
   let deleteReq = indexedDB.deleteDatabase(getAppName());
   deleteReq.onsuccess = (event) => {
     logger("dom","DB削除成功");
-    console.log(getYMDHMSM() + " : dom|DB削除成功");
+    console.log(getYMDHMSM() + "|dom|DB削除成功");
   }
   deleteReq.onerror = () => {
     logger("dom","DB削除失敗");
-    console.log(getYMDHMSM() + " : dom|DB削除失敗");
+    console.log(getYMDHMSM() + "|dom|DB削除失敗");
   }
 });
 
@@ -677,15 +692,15 @@ dbUpFunc = () => {
     //DBのバージョン更新
     openReq.onupgradeneeded = (event) => {
       logger("dom","db upgrade try");
-      console.log(getYMDHMSM() + " : db upgrade try");
+      console.log(getYMDHMSM() + "|dom|db upgrade try");
       db = event.target.result;
       try {
         db.createObjectStore(getOsName(), { keyPath: getKeyPathName() });
         logger("dom","db upgrade success");
-        console.log(getYMDHMSM() + " : db upgrade success");
+        console.log(getYMDHMSM() + "|dom|db upgrade success");
       } catch(e) {
         logger("dom","db upgrade fail - " + e);
-        console.log(getYMDHMSM() + " : db upgrade fail - " + e);
+        console.log(getYMDHMSM() + "|dom|db upgrade fail - " + e);
       }
       db.close();
     };
@@ -706,13 +721,13 @@ document.getElementById("app-swdel").addEventListener("click", () => {
     })
     .finally( () => {
       logger("dom","ServiceWorkerを削除しました");
-      console.log(getYMDHMSM() + " : dom|ServiceWorkerを削除しました");
+      console.log(getYMDHMSM() + "|dom|ServiceWorkerを削除しました");
     });
 
   //ブラウザ非対応の場合
   } catch(e) {
     logger("dom","ServiceWorker削除ブラウザ非対応");
-    console.log(getYMDHMSM() + " : dom|ServiceWorker削除ブラウザ非対応");
+    console.log(getYMDHMSM() + "|dom|ServiceWorker削除ブラウザ非対応");
   };
 });
 
@@ -731,28 +746,44 @@ document.getElementById("app-ccdel").addEventListener("click", () => {
     })
     .finally( () => {
       logger("dom","キャッシュを削除しました");
-      console.log(getYMDHMSM() + " : dom|キャッシュを削除しました");
+      console.log(getYMDHMSM() + "|dom|キャッシュを削除しました");
     });
 
   //ブラウザ非対応の場合
   } catch(e) {
     logger("dom","キャッシュ削除ブラウザ非対応");
-    console.log(getYMDHMSM() + " : dom|キャッシュ削除ブラウザ非対応");
+    console.log(getYMDHMSM() + "|dom|キャッシュ削除ブラウザ非対応");
   };
 });
 
 document.getElementById("app-ccup").addEventListener("click", async () => {
   logger("dom","app-ccup");
-  console.log("dom:postMessage:updateCache");
+  console.log(getYMDHMSM() + "|dom|postMessage:updateCache");
   registration = await navigator.serviceWorker.getRegistration();
   await registration.active.postMessage({func:"updateCache", data:""});
 });
 
 document.getElementById("app-swreq").addEventListener("click", async () => {
   logger("dom","app-swreq");
-  console.log("dom:postMessage:bgProc");
+  console.log(getYMDHMSM() + "|dom|postMessage:bgProc");
   registration = await navigator.serviceWorker.getRegistration();
   await registration.active.postMessage({func:"bgProc", data:""});
+});
+
+document.getElementById("app-logwatch").addEventListener("click", () => {
+  logger("dom","app-logwatch");
+  console.log(getYMDHMSM() + "|dom|app-logwatch");
+  document.getElementById('elLog').style.display = "block";
+  document.getElementById('elLifeG').style.display = "none";
+  bottomScroll();
+});
+
+document.getElementById("app-lifegame").addEventListener("click", () => {
+  logger("dom","app-lifegame");
+  console.log(getYMDHMSM() + "|dom|app-lifegame");
+  lifeGameInit();
+  document.getElementById('elLog').style.display = "none";
+  document.getElementById('elLifeG').style.display = "block";
 });
 
 </script>
