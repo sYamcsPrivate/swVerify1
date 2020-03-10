@@ -1,8 +1,8 @@
 //外部ファイル読込
-importScripts('common.js', 'background.js');
+importScripts('js/common.js', 'js/background.js');
 
 //バージョン
-const VERSION_APP = "0.0.8.024";
+const VERSION_APP = "0.0.9.010";
 const VERSION_DB = 1; //indexedDBのバージョンはint型、及び上げることはできても下げれない模様
 
 //キャッシュ名、キャッシュアイテム

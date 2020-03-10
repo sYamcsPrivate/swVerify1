@@ -3,11 +3,11 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no, user-scalable=no">
-  <link rel="icon" type="image/png" href="icon-512x512.png">
-  <link rel="apple-touch-icon" href="icon-512x512.png" sizes="512x512"/>
+  <link rel="icon" type="image/png" href="img/icon-512x512.png">
+  <link rel="apple-touch-icon" href="img/icon-512x512.png" sizes="512x512"/>
   <link rel="manifest" href="manifest.json">
-  <script src="common.js"></script>
-  <script src="lifegame.js"></script>
+  <script src="js/common.js"></script>
+  <script src="js/lifegame.js"></script>
   <style>
 .index {
   font-family: 游ゴシック体, 'Yu Gothic', YuGothic, 'ヒラギノ角ゴシック Pro', 'Hiragino Kaku Gothic Pro', メイリオ, Meiryo, Osaka, 'ＭＳ Ｐゴシック', 'MS PGothic', sans-serif;
@@ -253,7 +253,7 @@ install.page
 
 <div class="title-outer">
   <div class="title-inner" id="install-title-inner1">
-    <img src="icon-512x512.png" alt="Image" width="64" height="64">
+    <img src="img/icon-512x512.png" alt="Image" width="64" height="64">
   </div>
   <div class="title-inner" id="install-title-inner2">
     <h1>swVerfy1</h1>
@@ -477,7 +477,7 @@ app.page
 /* モーダルCSSここまで */
 
 /* モーダル内表示ここから */
-#modalContents>h1 {
+.menuh1 {
   padding: 0px;
   margin: 0px;
 }
@@ -506,9 +506,8 @@ app.page
 
   <div style="margin: 2px 0;">
     <ul class="menu-btn-body">
-      <li class="btn menu-btn" id="buttonRandom">Random</li>
-      <li class="btn menu-btn" id="buttonStart">Start</li>
-      <li class="btn menu-btn" id="buttonReset">Reset</li>
+      <li class="btn menu-btn" id="app-lg-start">Start</li>
+      <li class="btn menu-btn" id="app-lg-reset">Reset</li>
     </ul>
   </div>
   <canvas id="lifegame"></canvas>
@@ -541,7 +540,9 @@ app.page
       </div>
     </div>
     <div id="modalContents">
-      <h1>Menu</h1>
+      <h1 class="menuh1">Menu</h1>
+
+<span id="menuSysMgr">
       <ul class="menu-btn-body">
         <li class="btn menu-btn" id="app-gotoInstall">goInstall</li>
         <li class="btn menu-btn" id="app-reload">Reload</li>
@@ -553,10 +554,27 @@ app.page
         <li class="btn menu-btn" id="app-ccdel">CacheDel</li>
         <li class="btn menu-btn" id="app-ccup">CacheUp</li>
         <li class="btn menu-btn" id="app-swreq">SwReq</li>
-        <li class="btn menu-btn" id="app-logwatch">LogWatch</li>
+      </ul>
+2回reloadするとアプリを更新できる。<br>
+</span>
+
+<span id="menuLifeG" style="display:none;">
+      <ul class="menu-btn-body">
+        <li class="btn menu-btn" id="app-lg-random">random</li>
+        <li class="btn menu-btn" id="app-lg-glider">glider</li>
+        <li class="btn menu-btn" id="app-lg-breeder">breeder</li>
+      </ul>
+</span>
+
+<br>
+<span id="menuApp">
+      <h1 class="menuh1">AppChange</h1>
+      <ul class="menu-btn-body">
+        <li class="btn menu-btn" id="app-logwatch">SysCtrl</li>
         <li class="btn menu-btn" id="app-lifegame">LifeGame</li>
       </ul>
-アプリを更新するには2回reloadする必要あり！<br>
+</span>
+
     </div>
   </div>
 </section>
@@ -775,6 +793,8 @@ document.getElementById("app-logwatch").addEventListener("click", () => {
   console.log(getYMDHMSM() + "|dom|app-logwatch");
   document.getElementById('elLog').style.display = "block";
   document.getElementById('elLifeG').style.display = "none";
+  document.getElementById('menuSysMgr').style.display = "block";
+  document.getElementById('menuLifeG').style.display = "none";
   bottomScroll();
   modalArea.classList.toggle('is-show');
 });
@@ -785,6 +805,8 @@ document.getElementById("app-lifegame").addEventListener("click", () => {
   lifeGameInit();
   document.getElementById('elLog').style.display = "none";
   document.getElementById('elLifeG').style.display = "block";
+  document.getElementById('menuSysMgr').style.display = "none";
+  document.getElementById('menuLifeG').style.display = "block";
   modalArea.classList.toggle('is-show');
 });
 
@@ -827,17 +849,6 @@ index.html js start
 関数化して各処理に渡す
 ****************************************
 */
-
-/*
-----------------------------------------
-setTimeout promise版
-----------------------------------------
-*/
-let wait = async (ms) => {
-  return new Promise( (resolve) => {
-    setTimeout(() => resolve(), ms);
-  });
-}
 
 /*
 ----------------------------------------
@@ -1082,6 +1093,7 @@ let appInit = () => {
     //ここで諸々のアプリ起動準備を実施
     dbUpFunc();
     menuInit();
+    lifeGameInit();
     resolve();
   });
 };
@@ -1097,9 +1109,6 @@ let loadFunc = () => {
 
   //sw関連
   forSw()
-
-  //db関連 ... sw.jsへ移送(sw.js読み込みと同時に登録)
-  //.then( () => forDb() )
 
   //キャッシュチェック
   .then( () => chkCache() )
@@ -1152,7 +1161,12 @@ let setPage = (hash) => {
 init proc
 ****************************************
 */
-window.addEventListener("DOMContentLoaded", () => {
+//dom構成読込直後
+//window.addEventListener("DOMContentLoaded", () => {
+//dom構成読込->画像等全てを読み込んだ後
+//window.addEventListener("load", () => {
+//})
+window.onload = () => {
   //インストール画面へ
   if ( location.search == "" ) {
     setPage("install");
@@ -1168,8 +1182,8 @@ window.addEventListener("DOMContentLoaded", () => {
     //クエリ値エラー
     setPage("error");
   }
+};
 
-})
 logger("dom","ここまで読み込めてるかチェック");
 //alert("ここまで読み込めてるかチェック。");
 

@@ -14,11 +14,11 @@ var getKeyPathName = () => "key";
 
 //キャッシュアイテムズ ... sw.js自前で「./version」を組み込んでいる
 var getCacheItems = () => [
-  "./lifegame.js",
-  "./background.js",
-  "./icon-512x512.png",
-  "./common.js",
-  "./favicon.ico",
+  "./js/lifegame.js",
+  "./js/background.js",
+  "./js/common.js",
+  "./img/icon-512x512.png",
+  "./img/favicon.ico",
   "./manifest.json",
   "./sw.js",
   "./?app",
@@ -57,6 +57,13 @@ var getYMDHMSM = () => {
   let mSeconds = DD.getMilliseconds();
   let res = Year + "/" + Month + "/" + Day + "-" + Hours + ":" + Minutes + ":" + Seconds + ":" + mSeconds;
   return res;
+}
+
+//setTimeout promise版
+let wait = async (ms) => {
+  return new Promise( (resolve) => {
+    setTimeout(() => resolve(), ms);
+  });
 }
 
 //db取得(indexedDBから固定オブジェクトストア名＋指定keyで情報取得)
