@@ -1,7 +1,7 @@
 
 //稼働環境
-var getAppPath = () => "/" + getAppName(); //本番用
-//var getAppPath = () => ""; //開発用
+//var getAppPath = () => "/" + getAppName(); //本番用
+var getAppPath = () => ""; //開発用
 
 //アプリ名＋データベース名
 var getAppName = () => "swVerify1";
