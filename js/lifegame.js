@@ -288,8 +288,9 @@ let initCells = () => {
   }
 
   //キャンバス、セルサイズ見直し
-  cellSize = parseInt(base / xy);
-  if (cellSize <= 1) cellSize = 2;
+  //cellSize = parseInt(base / xy);
+  cellSize = base / xy;
+  if (cellSize < 1) cellSize = 1;
   base = cellSize * xy;
 
   //キャンバス、セルサイズ再設定
