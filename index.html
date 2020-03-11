@@ -494,6 +494,16 @@ app.page
   width: 80px;
   height: 25px;
 }
+.sel-btn {
+  float: left;
+  padding: 5px;
+  margin: 5px;
+  width: 92px;
+  height: 33px;
+}
+.sel-btn option {
+  font-size: 0.5em;
+}
 /* モーダル内表示ここまで */
 
 </style>
@@ -508,6 +518,7 @@ app.page
     <ul class="menu-btn-body">
       <li class="btn menu-btn" id="app-lg-start">Start</li>
       <li class="btn menu-btn" id="app-lg-reset">Reset</li>
+      <li class="menu-btn">Gen:<span id="app-lg-gen"></span></li>
     </ul>
   </div>
   <canvas id="lifegame"></canvas>
@@ -540,9 +551,9 @@ app.page
       </div>
     </div>
     <div id="modalContents">
-      <h1 class="menuh1">Menu</h1>
 
 <span id="menuSysMgr">
+      <h1 class="menuh1">Menu</h1>
       <ul class="menu-btn-body">
         <li class="btn menu-btn" id="app-gotoInstall">goInstall</li>
         <li class="btn menu-btn" id="app-reload">Reload</li>
@@ -559,11 +570,25 @@ app.page
 </span>
 
 <span id="menuLifeG" style="display:none;">
+
+      <h1 class="menuh1">Setting</h1>
+      <ul class="menu-btn-body">
+        <li class="btn menu-btn" id="app-lg-endless">AutoEnd</li>
+        <select class="sel-btn" id="app-lg-size-sel">
+          <option value="50">50</option>
+          <option value="100" selected>100</option>
+          <option value="200">200</option>
+        </select>
+      </ul>
+
+      <br>
+      <h1 class="menuh1">Arrange</h1>
       <ul class="menu-btn-body">
         <li class="btn menu-btn" id="app-lg-random">random</li>
         <li class="btn menu-btn" id="app-lg-glider">glider</li>
         <li class="btn menu-btn" id="app-lg-breeder">breeder</li>
       </ul>
+
 </span>
 
 <br>
@@ -1093,7 +1118,7 @@ let appInit = () => {
     //ここで諸々のアプリ起動準備を実施
     dbUpFunc();
     menuInit();
-    lifeGameInit();
+    //lifeGameInit();
     resolve();
   });
 };
