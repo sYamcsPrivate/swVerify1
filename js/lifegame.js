@@ -91,8 +91,10 @@ let sizeChange = () => {
   let strSize = document.getElementById('app-lg-size-sel').value;
   logger("dom","sizeChange start:" + strSize);
   console.log(getYMDHMSM() + "|dom|sizeChange start:" + strSize);
+  document.getElementById('app-lg-size-sel-disp').innerText = strSize;
   xy = parseInt(strSize);
-  alert("please Reset");
+  alert("forceReset");
+  initCells();
 };
 
 // 設定：エンドレスon/off
@@ -120,7 +122,8 @@ let drawCell = (x, y) => {
     style = "rgb(" + col + "," + col + "," + col + ")";
   }
   ctx.fillStyle = style;
-  ctx.fillRect(x * cellSize, y * cellSize, cellSize - 1, cellSize - 1);
+  ctx.fillRect(x * cellSize, y * cellSize, cellSize, cellSize);
+  //ctx.fillRect(x * cellSize, y * cellSize, cellSize - 1, cellSize - 1);
 };
  
 // 全体を再描画
@@ -274,6 +277,11 @@ let initCells = () => {
   logger("dom","app-lg-reset start");
   console.log(getYMDHMSM() + "|dom|app-lg-reset start");
 
+  //変数初期化（停止状態＆自動停止モード）
+  stopFunc();
+  endlessFlg = true; //暫定でエンドレスモードにして次の関数でfalse(自動停止モード)にする
+  onEndless();
+
   //キャンバス親要素から最大値見直し
   let appWidth = document.getElementById('app-body').clientWidth;
   let appHeight = document.getElementById('app-body').clientHeight - 60; //ボタン部分を除く
@@ -335,9 +343,6 @@ lifeGameInit = () => {
   //キャンバス取得
   canvas = document.getElementById('lifegame');
 
-  //キャンバス初期化
-  initCells();
-
   //メイン画面ボタンイベント
   buttonStart = document.getElementById('app-lg-start');
   buttonReset = document.getElementById('app-lg-reset');
@@ -375,4 +380,8 @@ lifeGameInit = () => {
     breederCells();
     modalArea.classList.toggle('is-show');
   }, false);
+
+  //キャンバス初期化
+  initCells();
+
 };

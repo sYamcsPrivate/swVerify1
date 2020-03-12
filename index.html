@@ -34,20 +34,19 @@
   vertical-align: middle;
 }
 .btn {
-  display: block;
+  display: flex;
+  justify-content: center;
+  align-items: center;
   position: relative;
   /*width: 80px; 横幅は各要素で指定*/
   margin: 0px;
   padding: 0.2em;
-  text-align: center;
   text-decoration: none;
   color: #1B1B1B;
   background: #fff;
   border:1px solid #1B1B1B;
 }
 .btn:hover  {
-  /* background: #1B1B1B;
-  color: #fff; */
   cursor: pointer;
   text-decoration: none;
 }
@@ -56,6 +55,15 @@
   color: #fff;
   cursor: pointer;
   text-decoration: none;
+}
+ul,li {
+  list-style: none; /*リスト点削除*/
+}
+/*ブラウザデフォルト無効*/
+select {
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  appearance: none;
 }
   </style>
   <title>swVerify1</title>
@@ -494,16 +502,48 @@ app.page
   width: 80px;
   height: 25px;
 }
-.sel-btn {
-  float: left;
-  padding: 5px;
-  margin: 5px;
-  width: 92px;
-  height: 33px;
+.gen {
+  display: flex;
+  align-items: center;
+  position: relative;
+  text-align: left;
+  text-decoration: none;
+  color: #1B1B1B;
+  background: #fff;
 }
-.sel-btn option {
+
+/* セレクトボタン化ここから */
+.sel-disp {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+.sel-dum {
+  position: absolute;
+  top: 0;
+  left: 0;
+  padding: 5%;
+  margin: 0;
+  width: 100%;
+  height: 100%;
+  opacity: 0;
+}
+.sel-dum:hover  {
+  cursor: pointer;
+}
+.sel-dum:focus {
+  z-index: -1;
+  opacity: 1;
+}
+/* IE10以上で矢印を消す */
+.sel-dum:-ms-expand {
+  display: none; 
+}
+.sel-dum option {
   font-size: 0.5em;
 }
+/* セレクトボタン化ここまで */
+
 /* モーダル内表示ここまで */
 
 </style>
@@ -518,7 +558,7 @@ app.page
     <ul class="menu-btn-body">
       <li class="btn menu-btn" id="app-lg-start">Start</li>
       <li class="btn menu-btn" id="app-lg-reset">Reset</li>
-      <li class="menu-btn">Gen:<span id="app-lg-gen"></span></li>
+      <li class="gen menu-btn">Gen:<span id="app-lg-gen"></span></li>
     </ul>
   </div>
   <canvas id="lifegame"></canvas>
@@ -566,7 +606,7 @@ app.page
         <li class="btn menu-btn" id="app-ccup">CacheUp</li>
         <li class="btn menu-btn" id="app-swreq">SwReq</li>
       </ul>
-2回reloadするとアプリを更新できる。<br>
+アプリを更新するには2回reloadを実施。<br>
 </span>
 
 <span id="menuLifeG" style="display:none;">
@@ -574,12 +614,16 @@ app.page
       <h1 class="menuh1">Setting</h1>
       <ul class="menu-btn-body">
         <li class="btn menu-btn" id="app-lg-endless">AutoEnd</li>
-        <select class="sel-btn" id="app-lg-size-sel">
-          <option value="50">50</option>
-          <option value="100" selected>100</option>
-          <option value="200">200</option>
-        </select>
+        <div class="btn menu-btn sel-body">
+          <div class="sel-disp" id="app-lg-size-sel-disp">Size</div>
+          <select class="sel-dum" id="app-lg-size-sel">
+            <option value="50">50</option>
+            <option value="100" selected>100</option>
+            <option value="200">200</option>
+          </select>
+        </div>
       </ul>
+注意：サイズ変更すると強制リセットします。（デフォルトは100）<br>
 
       <br>
       <h1 class="menuh1">Arrange</h1>
