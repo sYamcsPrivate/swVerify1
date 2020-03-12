@@ -613,7 +613,6 @@ app.page
 
       <h1 class="menuh1">Setting</h1>
       <ul class="menu-btn-body">
-        <li class="btn menu-btn" id="app-lg-endless">AutoEnd</li>
         <div class="btn menu-btn sel-body">
           <div class="sel-disp" id="app-lg-size-sel-disp">Size</div>
           <select class="sel-dum" id="app-lg-size-sel">
@@ -622,15 +621,24 @@ app.page
             <option value="200">200</option>
           </select>
         </div>
+        <li class="btn menu-btn" id="app-lg-endless">AutoEnd</li>
+        <div class="btn menu-btn sel-body" id="app-lg-endlesstype-sel-body">
+          <div class="sel-disp" id="app-lg-endlesstype-sel-disp">Mode</div>
+          <select class="sel-dum" id="app-lg-endlesstype-sel">
+            <option value="random" selected>random</option>
+            <option value="breeder1">breeder1</option>
+          </select>
+        </div>
       </ul>
-注意：サイズ変更すると強制リセットします。（デフォルトは100）<br>
+・サイズ変更すると強制リセットします。（デフォルトは100）<br>
+・エンドレスモードのデフォルトはrandom配置です。<br>
 
       <br>
       <h1 class="menuh1">Arrange</h1>
       <ul class="menu-btn-body">
         <li class="btn menu-btn" id="app-lg-random">random</li>
         <li class="btn menu-btn" id="app-lg-glider">glider</li>
-        <li class="btn menu-btn" id="app-lg-breeder">breeder</li>
+        <li class="btn menu-btn" id="app-lg-breeder1">breeder1</li>
       </ul>
 
 </span>

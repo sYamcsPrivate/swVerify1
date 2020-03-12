@@ -1,4 +1,3 @@
-
 //稼働環境
 var getAppPath = () => "/" + getAppName(); //本番用
 //var getAppPath = () => ""; //開発用

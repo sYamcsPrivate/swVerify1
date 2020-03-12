@@ -15,44 +15,11 @@ let xy = 100; //一辺の大きさ
 let gen = 0; //世代数
 let elGen; //世代数表示要素
 let endlessFlg = false; //安定→random→onStart
+let endlessType = "random"; //エンドレスモードの種類の初期値「ランダム」
 
-// 配置：ランダム
-let randomCells = () => {
-  logger("dom","app-lg-random start");
-  for(col=0;col<cols;col++){
-    cells[col] = new Array();
-    for(row=0;row<rows;row++){
-      let r = Math.random();
-      if (r < 0.2) {
-        cells[col][row] = 1;
-      } else {
-        cells[col][row] = 0;
-      }
-    }
-  }
-  redraw();
-};
- 
-// 配置：グライダー
-let gliderCells = () => {
-  logger("dom","app-lg-glider start");
-
-  cells[1][1] = 1;
-  cells[2][1] = 1;
-  cells[3][1] = 1;
-  cells[1][2] = 1;
-  cells[2][2] = 0;
-  cells[3][2] = 0;
-  cells[1][3] = 0;
-  cells[2][3] = 1;
-  cells[3][3] = 0;
-
-  redraw();
-};
- 
-// 配置：ブリーダー
-let breederCells = () => {
-  logger("dom","app-lg-breeder start");
+// 配置：ブリーダー1(横線タイプ)
+let breeder1Cells = () => {
+  logger("dom","app-lg-breeder1 start");
 
   cells[1][1] = 1;
   cells[2][1] = 1;
@@ -86,6 +53,63 @@ let breederCells = () => {
   redraw();
 };
  
+// 配置：グライダー
+let gliderCells = () => {
+  logger("dom","app-lg-glider start");
+
+  cells[1][1] = 1;
+  cells[2][1] = 1;
+  cells[3][1] = 1;
+  cells[1][2] = 1;
+  cells[2][2] = 0;
+  cells[3][2] = 0;
+  cells[1][3] = 0;
+  cells[2][3] = 1;
+  cells[3][3] = 0;
+
+  redraw();
+};
+ 
+// 配置：ランダム
+let randomCells = () => {
+  logger("dom","app-lg-random start");
+  for(col=0;col<cols;col++){
+    cells[col] = new Array();
+    for(row=0;row<rows;row++){
+      let r = Math.random();
+      if (r < 0.2) {
+        cells[col][row] = 1;
+      } else {
+        cells[col][row] = 0;
+      }
+    }
+  }
+  redraw();
+};
+ 
+// 設定：エンドレス種類変更
+let endlessTypeChange = () => {
+  endlessType = document.getElementById('app-lg-endlesstype-sel').value;
+  logger("dom","endlessTypeChange start:" + endlessType);
+  console.log(getYMDHMSM() + "|dom|endlessTypeChange start:" + endlessType);
+  document.getElementById('app-lg-endlesstype-sel-disp').innerText = endlessType;
+};
+
+// 設定：エンドレスon/off
+let onEndless = () => {
+  logger("dom","app-lg-endless start:" + endlessFlg);
+  console.log(getYMDHMSM() + "|dom|app-lg-endless start:" + endlessFlg);
+  if(endlessFlg){
+    buttonEndless.innerText = "AutoEnd";
+    document.getElementById('app-lg-endlesstype-sel-body').style.display = "none";
+    endlessFlg = false;
+  } else {
+    buttonEndless.innerText = "EndLess";
+    document.getElementById('app-lg-endlesstype-sel-body').style.display = "block";
+    endlessFlg = true;
+  }
+};
+
 // 設定：サイズ変更
 let sizeChange = () => {
   let strSize = document.getElementById('app-lg-size-sel').value;
@@ -97,19 +121,6 @@ let sizeChange = () => {
   initCells();
 };
 
-// 設定：エンドレスon/off
-let onEndless = () => {
-  logger("dom","app-lg-endless start:" + endlessFlg);
-  console.log(getYMDHMSM() + "|dom|app-lg-endless start:" + endlessFlg);
-  if(endlessFlg){
-    buttonEndless.innerText = "AutoEnd";
-    endlessFlg = false;
-  } else {
-    buttonEndless.innerText = "EndLess";
-    endlessFlg = true;
-  }
-};
- 
 // セルを描画
 let drawCell = (x, y) => {
   let value = cells[x][y];
@@ -216,9 +227,14 @@ let nextGeneration = () => {
   if (cells.toString() == cellsN2.toString()) {
     elGen.innerText = insComma(gen - 2 < 0 ? 0 : gen - 2);  //世代数を-2して表示
 
-    //エンドレスモードならランダム配置して次世代へ
+    //エンドレスモードならエンドレス種類に応じて配置して次世代へ
+    //エラーハンドリング：想定外値の場合はランダム配置で実施
     if(endlessFlg) {
-      randomCells();
+      if (endlessType == "breeder1") {
+        breeder1Cells();
+      } else {
+        randomCells();
+      }
       redraw();
 
     //自動停止モードなら停止処理へ
@@ -281,6 +297,11 @@ let initCells = () => {
   stopFunc();
   endlessFlg = true; //暫定でエンドレスモードにして次の関数でfalse(自動停止モード)にする
   onEndless();
+
+  //セレクトボックス初期化（初期表示＆ランダムモード）
+  endlessType = "random"; //エンドレスモードの種類の初期値「ランダム」
+  document.getElementById('app-lg-endlesstype-sel-disp').innerText = "Mode"; //エンドレスモードの初期表示
+  document.getElementById('app-lg-endlesstype-sel').selectedIndex = 0; //random選択状態に設定
 
   //キャンバス親要素から最大値見直し
   let appWidth = document.getElementById('app-body').clientWidth;
@@ -359,12 +380,15 @@ lifeGameInit = () => {
   }, false);
 
   //メニューボタンイベント：設定
+  document.getElementById('app-lg-size-sel').onchange = () => {
+    sizeChange();
+  };
   buttonEndless = document.getElementById('app-lg-endless');
   buttonEndless.addEventListener("click", () => {
     onEndless();
   }, false);
-  document.getElementById('app-lg-size-sel').onchange = () => {
-    sizeChange();
+  document.getElementById('app-lg-endlesstype-sel').onchange = () => {
+    endlessTypeChange();
   };
 
   //メニューボタンイベント：配置
@@ -376,8 +400,8 @@ lifeGameInit = () => {
     gliderCells();
     modalArea.classList.toggle('is-show');
   }, false);
-  document.getElementById('app-lg-breeder').addEventListener("click", () => {
-    breederCells();
+  document.getElementById('app-lg-breeder1').addEventListener("click", () => {
+    breeder1Cells();
     modalArea.classList.toggle('is-show');
   }, false);
 
