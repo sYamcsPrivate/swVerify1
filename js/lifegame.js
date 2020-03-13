@@ -1,4 +1,4 @@
-let canvas;
+let canvas = "";
 let ctx;
 let cellSize = 8;   // セル1マスの暫定サイズ
 let cols;
@@ -9,6 +9,15 @@ let rows;
 let cells = [];
 let cellsN1 = []; //1世代前
 let cellsN2 = []; //2世代前
+
+//セル属性集合(生セル＋徐々死セルのみで、死セルは保有しない)
+//第1要素:col(x)、第2要素:row(y)、第3要素:alive:100(生)～0以上(徐々死)→表示時に100で割って小数点2位までの少数で扱う
+//セパレータは"x,y,:alive"で表現
+let cellProps = [];
+let cellPropsN1 = []; //1世代前
+let cellPropsN2 = []; //2世代前
+let tmpCellProps = []; //次世代テンポラリ
+
 let timer1;
 let running = false;
 let base; //キャンバスサイズの基底サイズ
@@ -75,13 +84,11 @@ let gliderCells = () => {
 let randomCells = () => {
   logger("dom","app-lg-random start");
   for(col=0;col<cols;col++){
-    cells[col] = [];
     for(row=0;row<rows;row++){
       let r = Math.random();
       if (r < 0.2) {
-        cells[col][row] = 1;
-      } else {
-        cells[col][row] = 0;
+        let cellProp = col + "," + row + ",:100";
+        cellProps.push(cellProp);
       }
     }
   }
@@ -123,109 +130,141 @@ let sizeChange = () => {
 };
 
 // セルを描画
-let drawCell = (x, y) => {
-  let value = cells[x][y];
-  //let style = value ? "rgb(156, 255,0)" : "rgb(40,40,40)"; 
-  let style;
-  if (value == 1) {
-    style = "rgb(0,0,0)";
-  } else {
-    let col = 255 * (1 - value);
-    style = "rgb(" + col + "," + col + "," + col + ")";
-  }
+let drawCell = (cellProp) => {
+  //console.log("cellProp");
+  //console.log(cellProp);
+  //console.log("cellProps");
+  //console.log(cellProps);
+  let x = parseInt(cellProp.split(",")[0]);
+  let y = parseInt(cellProp.split(",")[1]);
+  let alive = parseInt(cellProp.split(":")[1]) / 100;
+  let col = 255 * (1 - alive);
+  let style = "rgb(" + col + "," + col + "," + col + ")";
   ctx.fillStyle = style;
   ctx.fillRect(x * cellSize, y * cellSize, cellSize, cellSize);
-  //ctx.fillRect(x * cellSize, y * cellSize, cellSize - 1, cellSize - 1);
 };
  
 // 全体を再描画
 let redraw = () => {
-  for(col=0;col<cols;col++){
-    for(row=0;row<rows;row++){
-      drawCell(col, row);
-    }
-  }
+  cellProps.forEach(cellProp => drawCell(cellProp));
   ctx.strokeStyle = "rgb(128,128,128)";
   ctx.strokeRect(0,0, canvas.width, canvas.height);
 };
- 
-// 周囲の生存セルを数える - 有限版(Finite) - 徐々に死ぬ実装はしていない
-let countAroundFinite = (x, y) => {
-  let count = 0;
-  for(i=-1;i<=1;i++){
-    for(j=-1;j<=1;j++){
-      if(
-          (i != 0 || j != 0) &&
-          x + i >= 0 && x + i < cols &&
-          y + j >= 0 && y + j < rows
-      ) {
-        count += cells[x + i][y + j];
-      }
+
+// 次世代テンポラリ追加：生存力が強いものを採用
+let nextCellPropsPush = (cellProp) => {
+  let x = parseInt(cellProp.split(",")[0]);
+  let y = parseInt(cellProp.split(",")[1]);
+  let alive = parseInt(cellProp.split(":")[1]) / 100;
+  let tmpCellProp = x + "," + y;
+  cellPropIdx = tmpCellProps.findIndex(el => el.indexOf(tmpCellProp) >= 0);
+  if (cellPropIdx < 0) {
+    tmpCellProps.push(cellProp);
+  } else {
+    let tmpAlive = parseInt(tmpCellProps[cellPropIdx].split(":")[1]) / 100;
+    if (alive > tmpAlive) {
+      tmpCellProps.splice(cellPropIdx,1);
+      tmpCellProps.push(cellProp);
     }
   }
-  return count;
 };
 
 // 周囲の生存セルを数える - 無限版(Infinite)
-let countAround = (x, y) => {
+let countAround = (cellProp) => {
+  let x = parseInt(cellProp.split(",")[0]);
+  let y = parseInt(cellProp.split(",")[1]);
   let count = 0;
   let provX = 0;
   let provY = 0;
-  for(i=-1;i<=1;i++){
+  for(let i=-1;i<=1;i++){
     provX = x + i;
     if (provX < 0) provX = cols - 1;
     if (provX >= cols) provX = 0;
-    for(j=-1;j<=1;j++){
+    for(let j=-1;j<=1;j++){
       provY = y + j;
       if (provY < 0) provY = rows - 1;
       if (provY >= rows) provY = 0;
       if (i != 0 || j != 0) {
-        if (cells[provX][provY] == 1) {
-          count += cells[provX][provY];
+        let cellProp = provX + "," + provY + ",:100";
+        let cellPropIdx = cellProps.findIndex(el => el.indexOf(cellProp) >= 0);
+        if (cellPropIdx >= 0) {
+          count++;
         }
       }
     }
   }
   return count;
 };
- 
+
+// 次世代生成
+let birthCell = (cellProp) => {
+  let x = parseInt(cellProp.split(",")[0]);
+  let y = parseInt(cellProp.split(",")[1]);
+  let provX = 0;
+  let provY = 0;
+  for(let i=-1;i<=1;i++){
+    provX = x + i;
+    if (provX < 0) provX = cols - 1;
+    if (provX >= cols) provX = 0;
+    for(let j=-1;j<=1;j++){
+      provY = y + j;
+      if (provY < 0) provY = rows - 1;
+      if (provY >= rows) provY = 0;
+      if (i != 0 || j != 0) {
+        let birthCellProp = provX + "," + provY + ",:100";
+        let count = countAround(birthCellProp);
+        if (count == 3) {
+          nextCellPropsPush(birthCellProp);
+        }
+      }
+    }
+  }
+};
+
 // セル死滅
-let deadCell = (dcell) => {
-  let res = dcell - 0.4; //徐々に死んでいくように見せる
+let deadCell = (alive) => {
+  let res = alive - 0.4; //徐々に死んでいくように見せる
   if (res < 0) res = 0;
   return res;
 };
 
 // 世代を進行させる
 let nextGeneration = () => {
-  let tmpCells = [];
-  for(col=0;col<cols;col++){
-    tmpCells[col] = [];
-    for(row=0;row<rows;row++){
-      var count = countAround(col, row);
-      if(cells[col][row] == 1){
-        if(count == 2 || count == 3){
-          tmpCells[col][row] = 1;
-        } else {
-          tmpCells[col][row] = deadCell(cells[col][row]);
-        }
+  //console.log("nextGeneration:cellProps");
+  //console.log(cellProps);
+  tmpCellProps = [];
+  cellProps.forEach(cellProp => {
+    let x = parseInt(cellProp.split(",")[0]);
+    let y = parseInt(cellProp.split(",")[1]);
+    let alive = parseInt(cellProp.split(":")[1]) / 100;
+    let nextCellProp;
+    let cellPropIdx;
+    if (alive == 1) {
+      //自己生存判定
+      let count = countAround(cellProp);
+      if (count == 2 || count == 3) {
+        nextCellProp = cellProp;
       } else {
-        if(count == 3){
-          tmpCells[col][row] = 1;
-        } else {
-          tmpCells[col][row] = deadCell(cells[col][row]);
-        }
+        alive = parseInt(deadCell(alive) * 100);
+        nextCellProp = x + "," + y + ",:" + alive;
       }
+      nextCellPropsPush(nextCellProp);
+      //次世代生成
+      birthCell(cellProp);
+    } else {
+      alive = parseInt(deadCell(alive) * 100);
+      nextCellProp = x + "," + y + ",:" + alive;
+      nextCellPropsPush(nextCellProp);
     }
-  }
+  });
 
   //2世代前まで保管
-  cellsN2 = cellsN1; //2世代前保管
-  cellsN1 = cells; //1世代前保管
-  cells = tmpCells;
+  cellPropsN2 = cellPropsN1; //2世代前保管
+  cellPropsN1 = cellProps; //1世代前保管
+  cellProps = tmpCellProps;
 
   //2世代前と同一
-  if (cells.toString() == cellsN2.toString()) {
+  if (cellProps.toString() == cellPropsN2.toString()) {
     elGen.innerText = insComma(gen - 2 < 0 ? 0 : gen - 2);  //世代数を-2して表示
 
     //エンドレスモードならエンドレス種類に応じて配置して次世代へ
@@ -276,14 +315,26 @@ let canvasClick = (e) => {
   //上位で縮小表示しているためクリックした位置を縮小倍率で仮想算出
   let x = (e.clientX / 0.7) - canvas.offsetLeft;
   let y = (e.clientY / 0.7) - canvas.offsetTop;
-  let col = Math.floor(x / cellSize);
-  let row = Math.floor(y / cellSize);
-  if (cells[col][row] == 1) {
-    cells[col][row] = 0;
+  let col = Math.floor(x / cellSize - 0.5);
+  if (col < 0) col = 0;
+  let row = Math.floor(y / cellSize - 0.5);
+  if (row < 0) row = 0;
+  let cellProp = col + "," + row;
+  let cellPropIdx = cellProps.findIndex(el => el.indexOf(cellProp) >= 0);
+  console.log("cellProp");
+  console.log(cellProp);
+  console.log(cellPropIdx);
+  if (cellPropIdx < 0) {
+    cellProp = cellProp + ",:100";
+    cellProps.push(cellProp);
+    drawCell(cellProp);
   } else {
-    cells[col][row] = 1;
+    cellProp = cellProp + ",:0";
+    cellProps.splice(cellPropIdx,1);
+    drawCell(cellProp);
   }
-  drawCell(col, row);
+  console.log("cellProps");
+  console.log(cellProps);
 };
 
 // 世代数桁区切り
@@ -305,7 +356,7 @@ lifeGameInit = () => {
   document.getElementById('app-lg-endlesstype-sel').selectedIndex = 0; //random選択状態に設定
 
   //キャンバス取得
-  canvas = document.getElementById('lifegame');
+  if (!canvas) canvas = document.getElementById('lifegame');
 
   //キャンバス親要素から最大値見直し
   let appWidth = document.getElementById('app-body').clientWidth;
@@ -315,45 +366,41 @@ lifeGameInit = () => {
   console.log(getYMDHMSM() + "|dom|appWidth:" + appWidth + ",appHeight:" + appHeight);
 
   if (appWidth < appHeight) {
-    //base = parseInt( appWidth );
     base = appWidth;
   } else {
-    //base = parseInt( appHeight );
     base = appHeight;
   }
 
   //セルサイズ見直し
-  //cellSize = parseInt(base / xy);
   cellSize = base / xy;
-  //if (cellSize < 1) cellSize = 1;
-  //base = cellSize * xy;
 
   //キャンバス再設定
-  ctx = canvas.getContext('2d');
-  ctx.clearRect(0, 0, canvas.width, canvas.height);
-  //canvas.setAttribute("width", base.toString(10));
-  //canvas.setAttribute("height", base.toString(10));
   canvas.width = base;
   canvas.height = base;
+  ctx = canvas.getContext('2d');
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-  //行列数見直し(xyと同数になる想定)
-  //cols = Math.floor(canvas.width / cellSize);
-  //rows = Math.floor(canvas.height / cellSize);
+  //行列数見直し
   cols = xy;
   rows = xy;
 
   //キャンバス色初期化
-  //ctx.fillStyle = 'rgb(60, 60, 60)';
   ctx.fillStyle = "rgb(255,255,255)";
   ctx.fillRect(0,0, canvas.width, canvas.height);
   ctx.strokeStyle = "rgb(128,128,128)";
   ctx.strokeRect(0,0, canvas.width, canvas.height);
+
+  //セル属性集合初期化
+  cellProps = [];
+
+/*
   for(col=0;col<cols;col++){
     cells[col] = new Array();
     for(row=0;row<rows;row++){
       cells[col][row] = 0;
     }
   }
+*/
 
   //メイン画面世代数
   elGen = document.getElementById('app-lg-gen');
