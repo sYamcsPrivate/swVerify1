@@ -627,7 +627,9 @@ app.page
           <div class="sel-disp" id="app-lg-endlesstype-sel-disp">Mode</div>
           <select class="sel-dum" id="app-lg-endlesstype-sel">
             <option value="random" selected>random</option>
-            <option value="breeder1">breeder1</option>
+            <option value="brline">brline</option>
+            <option value="brmin">brmin</option>
+            <option value="brsquare">brsquare</option>
           </select>
         </div>
       </ul>
@@ -639,7 +641,9 @@ app.page
       <ul class="menu-btn-body">
         <li class="btn menu-btn" id="app-lg-random">random</li>
         <li class="btn menu-btn" id="app-lg-glider">glider</li>
-        <li class="btn menu-btn" id="app-lg-breeder1">breeder1</li>
+        <li class="btn menu-btn" id="app-lg-breeder1">brline</li>
+        <li class="btn menu-btn" id="app-lg-breeder2">brmin</li>
+        <li class="btn menu-btn" id="app-lg-breeder3">brsquare</li>
       </ul>
 
 </span>
@@ -884,12 +888,14 @@ document.getElementById('lifegame').addEventListener("click", (e) => {
 //メニューボタンイベント：設定
 document.getElementById('app-lg-size-sel').onchange = () => {
   sizeChange();
+  document.getElementById('app-lg-size-sel').blur();
 };
 document.getElementById('app-lg-endless').addEventListener("click", () => {
   onEndless();
 }, false);
 document.getElementById('app-lg-endlesstype-sel').onchange = () => {
   endlessTypeChange();
+  document.getElementById('app-lg-endlesstype-sel').blur();
 };
 
 //メニューボタンイベント：配置
@@ -903,6 +909,14 @@ document.getElementById('app-lg-glider').addEventListener("click", () => {
 }, false);
 document.getElementById('app-lg-breeder1').addEventListener("click", () => {
   breeder1Cells();
+  modalArea.classList.toggle('is-show');
+}, false);
+document.getElementById('app-lg-breeder2').addEventListener("click", () => {
+  breeder2Cells();
+  modalArea.classList.toggle('is-show');
+}, false);
+document.getElementById('app-lg-breeder3').addEventListener("click", () => {
+  breeder3Cells();
   modalArea.classList.toggle('is-show');
 }, false);
 

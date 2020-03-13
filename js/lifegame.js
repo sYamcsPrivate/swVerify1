@@ -1,4 +1,4 @@
-let canvas;
+let canvas = "";
 let ctx;
 let cellSize = 8;   // セル1マスの暫定サイズ
 let cols;
@@ -18,9 +18,48 @@ let elGen; //世代数表示要素
 let endlessFlg = false; //安定→random→onStart
 let endlessType = "random"; //エンドレスモードの種類の初期値「ランダム」
 
+// 配置：ブリーダー3(正方形タイプ)
+let breeder3Cells = () => {
+  logger("dom","app-lg-breeder3[square] start");
+
+  cells[1][1] = 1;
+  cells[1][2] = 1;
+  cells[1][5] = 1;
+  cells[2][1] = 1;
+  cells[2][4] = 1;
+  cells[3][1] = 1;
+  cells[3][4] = 1;
+  cells[3][5] = 1;
+  cells[4][3] = 1;
+  cells[5][1] = 1;
+  cells[5][3] = 1;
+  cells[5][4] = 1;
+  cells[5][5] = 1;
+
+  redraw();
+};
+ 
+// 配置：ブリーダー2(最小タイプ)
+let breeder2Cells = () => {
+  logger("dom","app-lg-breeder2[min] start");
+
+  cells[1][6] = 1;
+  cells[3][5] = 1;
+  cells[3][6] = 1;
+  cells[5][2] = 1;
+  cells[5][3] = 1;
+  cells[5][4] = 1;
+  cells[7][1] = 1;
+  cells[7][2] = 1;
+  cells[7][3] = 1;
+  cells[8][2] = 1;
+
+  redraw();
+};
+ 
 // 配置：ブリーダー1(横線タイプ)
 let breeder1Cells = () => {
-  logger("dom","app-lg-breeder1 start");
+  logger("dom","app-lg-breeder1[line] start");
 
   cells[1][1] = 1;
   cells[2][1] = 1;
@@ -231,8 +270,12 @@ let nextGeneration = () => {
     //エンドレスモードならエンドレス種類に応じて配置して次世代へ
     //エラーハンドリング：想定外値の場合はランダム配置で実施
     if(endlessFlg) {
-      if (endlessType == "breeder1") {
+      if (endlessType == "brline") {
         breeder1Cells();
+      } else if (endlessType == "brmin") {
+        breeder2Cells();
+      } else if (endlessType == "brsquare") {
+        breeder3Cells();
       } else {
         randomCells();
       }
@@ -276,8 +319,8 @@ let canvasClick = (e) => {
   //上位で縮小表示しているためクリックした位置を縮小倍率で仮想算出
   let x = (e.clientX / 0.7) - canvas.offsetLeft;
   let y = (e.clientY / 0.7) - canvas.offsetTop;
-  let col = Math.floor(x / cellSize);
-  let row = Math.floor(y / cellSize);
+  let col = Math.floor(x / cellSize - 0.5);
+  let row = Math.floor(y / cellSize - 0.5);
   if (cells[col][row] == 1) {
     cells[col][row] = 0;
   } else {
@@ -305,7 +348,7 @@ lifeGameInit = () => {
   document.getElementById('app-lg-endlesstype-sel').selectedIndex = 0; //random選択状態に設定
 
   //キャンバス取得
-  canvas = document.getElementById('lifegame');
+  if (!canvas) canvas = document.getElementById('lifegame');
 
   //キャンバス親要素から最大値見直し
   let appWidth = document.getElementById('app-body').clientWidth;
@@ -315,35 +358,25 @@ lifeGameInit = () => {
   console.log(getYMDHMSM() + "|dom|appWidth:" + appWidth + ",appHeight:" + appHeight);
 
   if (appWidth < appHeight) {
-    //base = parseInt( appWidth );
     base = appWidth;
   } else {
-    //base = parseInt( appHeight );
     base = appHeight;
   }
 
   //セルサイズ見直し
-  //cellSize = parseInt(base / xy);
   cellSize = base / xy;
-  //if (cellSize < 1) cellSize = 1;
-  //base = cellSize * xy;
 
   //キャンバス再設定
-  ctx = canvas.getContext('2d');
-  ctx.clearRect(0, 0, canvas.width, canvas.height);
-  //canvas.setAttribute("width", base.toString(10));
-  //canvas.setAttribute("height", base.toString(10));
   canvas.width = base;
   canvas.height = base;
+  ctx = canvas.getContext('2d');
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
 
   //行列数見直し(xyと同数になる想定)
-  //cols = Math.floor(canvas.width / cellSize);
-  //rows = Math.floor(canvas.height / cellSize);
   cols = xy;
   rows = xy;
 
   //キャンバス色初期化
-  //ctx.fillStyle = 'rgb(60, 60, 60)';
   ctx.fillStyle = "rgb(255,255,255)";
   ctx.fillRect(0,0, canvas.width, canvas.height);
   ctx.strokeStyle = "rgb(128,128,128)";
