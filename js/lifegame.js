@@ -3,11 +3,12 @@ let ctx;
 let cellSize = 8;   // セル1マスの暫定サイズ
 let cols;
 let rows;
-let cells = new Array();
-let cellsN1 = new Array(); //1世代前
-let cellsN2 = new Array(); //2世代前
-let buttonStart;
-let buttonReset;
+//let cells = new Array();
+//let cellsN1 = new Array(); //1世代前
+//let cellsN2 = new Array(); //2世代前
+let cells = [];
+let cellsN1 = []; //1世代前
+let cellsN2 = []; //2世代前
 let timer1;
 let running = false;
 let base; //キャンバスサイズの基底サイズ
@@ -74,7 +75,7 @@ let gliderCells = () => {
 let randomCells = () => {
   logger("dom","app-lg-random start");
   for(col=0;col<cols;col++){
-    cells[col] = new Array();
+    cells[col] = [];
     for(row=0;row<rows;row++){
       let r = Math.random();
       if (r < 0.2) {
@@ -100,12 +101,12 @@ let onEndless = () => {
   logger("dom","app-lg-endless start:" + endlessFlg);
   console.log(getYMDHMSM() + "|dom|app-lg-endless start:" + endlessFlg);
   if(endlessFlg){
-    buttonEndless.innerText = "AutoEnd";
+    document.getElementById('app-lg-endless').innerText = "AutoEnd";
     document.getElementById('app-lg-endlesstype-sel-body').style.display = "none";
     endlessFlg = false;
   } else {
-    buttonEndless.innerText = "EndLess";
-    document.getElementById('app-lg-endlesstype-sel-body').style.display = "block";
+    document.getElementById('app-lg-endless').innerText = "EndLess";
+    document.getElementById('app-lg-endlesstype-sel-body').style.display = "flex";
     endlessFlg = true;
   }
 };
@@ -118,7 +119,7 @@ let sizeChange = () => {
   document.getElementById('app-lg-size-sel-disp').innerText = strSize;
   xy = parseInt(strSize);
   alert("forceReset");
-  initCells();
+  lifeGameInit();
 };
 
 // セルを描画
@@ -197,9 +198,9 @@ let deadCell = (dcell) => {
 
 // 世代を進行させる
 let nextGeneration = () => {
-  let tmpCells = new Array();
+  let tmpCells = [];
   for(col=0;col<cols;col++){
-    tmpCells[col] = new Array();
+    tmpCells[col] = [];
     for(row=0;row<rows;row++){
       var count = countAround(col, row);
       if(cells[col][row] == 1){
@@ -253,7 +254,7 @@ let nextGeneration = () => {
 let stopFunc = () => {
   logger("dom","stopFunc start gen:" + gen);
   clearInterval(timer1);
-  buttonStart.innerText = "Start";
+  document.getElementById('app-lg-start').innerText = "Start";
   running = false;
 };
 
@@ -265,7 +266,7 @@ let onStart = () => {
   } else {
     nextGeneration();
     timer1 = setInterval("nextGeneration()", 100);
-    buttonStart.innerText = "Stop";
+    document.getElementById('app-lg-start').innerText = "Stop";
     running = true;
   };
 };
@@ -288,10 +289,10 @@ let canvasClick = (e) => {
 // 世代数桁区切り
 let insComma = (i) => String(i).replace(/(\d)(?=(\d{3})+(?!\d))/g, '$1,');
 
-// セル初期化
-let initCells = () => {
-  logger("dom","app-lg-reset start");
-  console.log(getYMDHMSM() + "|dom|app-lg-reset start");
+// アプリ初期処理
+lifeGameInit = () => {
+  logger("dom","lifeGameInit start");
+  console.log(getYMDHMSM() + "|dom|lifeGameInit start");
 
   //変数初期化（停止状態＆自動停止モード）
   stopFunc();
@@ -303,6 +304,9 @@ let initCells = () => {
   document.getElementById('app-lg-endlesstype-sel-disp').innerText = "Mode"; //エンドレスモードの初期表示
   document.getElementById('app-lg-endlesstype-sel').selectedIndex = 0; //random選択状態に設定
 
+  //キャンバス取得
+  canvas = document.getElementById('lifegame');
+
   //キャンバス親要素から最大値見直し
   let appWidth = document.getElementById('app-body').clientWidth;
   let appHeight = document.getElementById('app-body').clientHeight - 60; //ボタン部分を除く
@@ -311,18 +315,20 @@ let initCells = () => {
   console.log(getYMDHMSM() + "|dom|appWidth:" + appWidth + ",appHeight:" + appHeight);
 
   if (appWidth < appHeight) {
-    base = parseInt( appWidth );
+    //base = parseInt( appWidth );
+    base = appWidth;
   } else {
-    base = parseInt( appHeight );
+    //base = parseInt( appHeight );
+    base = appHeight;
   }
 
-  //キャンバス、セルサイズ見直し
+  //セルサイズ見直し
   //cellSize = parseInt(base / xy);
   cellSize = base / xy;
-  if (cellSize < 1) cellSize = 1;
-  base = cellSize * xy;
+  //if (cellSize < 1) cellSize = 1;
+  //base = cellSize * xy;
 
-  //キャンバス、セルサイズ再設定
+  //キャンバス再設定
   ctx = canvas.getContext('2d');
   ctx.clearRect(0, 0, canvas.width, canvas.height);
   //canvas.setAttribute("width", base.toString(10));
@@ -331,8 +337,10 @@ let initCells = () => {
   canvas.height = base;
 
   //行列数見直し(xyと同数になる想定)
-  cols = Math.floor(canvas.width / cellSize);
-  rows = Math.floor(canvas.height / cellSize);
+  //cols = Math.floor(canvas.width / cellSize);
+  //rows = Math.floor(canvas.height / cellSize);
+  cols = xy;
+  rows = xy;
 
   //キャンバス色初期化
   //ctx.fillStyle = 'rgb(60, 60, 60)';
@@ -354,58 +362,4 @@ let initCells = () => {
   gen = 0;
   elGen.innerText = insComma(gen);
   redraw();
-};
-
-// アプリ初期処理
-lifeGameInit = () => {
-  logger("dom","lifeGameInit start");
-  console.log(getYMDHMSM() + "|dom|lifeGameInit start");
-
-  //キャンバス取得
-  canvas = document.getElementById('lifegame');
-
-  //メイン画面ボタンイベント
-  buttonStart = document.getElementById('app-lg-start');
-  buttonReset = document.getElementById('app-lg-reset');
-  buttonStart.addEventListener("click", () => {
-    onStart();
-  }, false);
-  buttonReset.addEventListener("click", () => {
-    initCells();
-  }, false);
-
-  //キャンバスクリックイベント
-  canvas.addEventListener("click", (e) => {
-    canvasClick(e);
-  }, false);
-
-  //メニューボタンイベント：設定
-  document.getElementById('app-lg-size-sel').onchange = () => {
-    sizeChange();
-  };
-  buttonEndless = document.getElementById('app-lg-endless');
-  buttonEndless.addEventListener("click", () => {
-    onEndless();
-  }, false);
-  document.getElementById('app-lg-endlesstype-sel').onchange = () => {
-    endlessTypeChange();
-  };
-
-  //メニューボタンイベント：配置
-  document.getElementById('app-lg-random').addEventListener("click", () => {
-    randomCells();
-    modalArea.classList.toggle('is-show');
-  }, false);
-  document.getElementById('app-lg-glider').addEventListener("click", () => {
-    gliderCells();
-    modalArea.classList.toggle('is-show');
-  }, false);
-  document.getElementById('app-lg-breeder1').addEventListener("click", () => {
-    breeder1Cells();
-    modalArea.classList.toggle('is-show');
-  }, false);
-
-  //キャンバス初期化
-  initCells();
-
 };

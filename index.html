@@ -616,6 +616,7 @@ app.page
         <div class="btn menu-btn sel-body">
           <div class="sel-disp" id="app-lg-size-sel-disp">Size</div>
           <select class="sel-dum" id="app-lg-size-sel">
+            <option value="25">25</option>
             <option value="50">50</option>
             <option value="100" selected>100</option>
             <option value="200">200</option>
@@ -630,7 +631,7 @@ app.page
           </select>
         </div>
       </ul>
-・サイズ変更すると強制リセットします。（デフォルトは100）<br>
+・サイズを変更すると強制リセットします。（デフォルトのサイズは一辺100）<br>
 ・エンドレスモードのデフォルトはrandom配置です。<br>
 
       <br>
@@ -732,7 +733,7 @@ let logViewSplitFunc = async () => {
   });
 }
 
-//ボタンイベントリスナ
+//ボタンイベントリスナ：LogWatch
 document.getElementById("app-gotoInstall").addEventListener("click", () => {
   logger("dom","app-gotoInstall");
   setPage("install");
@@ -865,6 +866,47 @@ document.getElementById("app-swreq").addEventListener("click", async () => {
   await registration.active.postMessage({func:"bgProc", data:""});
 });
 
+//ボタンイベントリスナ：LifeG
+
+//メイン画面ボタンイベント
+document.getElementById('app-lg-start').addEventListener("click", () => {
+  onStart();
+}, false);
+document.getElementById('app-lg-reset').addEventListener("click", () => {
+  lifeGameInit();
+}, false);
+
+//キャンバスクリックイベント
+document.getElementById('lifegame').addEventListener("click", (e) => {
+  canvasClick(e);
+}, false);
+
+//メニューボタンイベント：設定
+document.getElementById('app-lg-size-sel').onchange = () => {
+  sizeChange();
+};
+document.getElementById('app-lg-endless').addEventListener("click", () => {
+  onEndless();
+}, false);
+document.getElementById('app-lg-endlesstype-sel').onchange = () => {
+  endlessTypeChange();
+};
+
+//メニューボタンイベント：配置
+document.getElementById('app-lg-random').addEventListener("click", () => {
+  randomCells();
+  modalArea.classList.toggle('is-show');
+}, false);
+document.getElementById('app-lg-glider').addEventListener("click", () => {
+  gliderCells();
+  modalArea.classList.toggle('is-show');
+}, false);
+document.getElementById('app-lg-breeder1').addEventListener("click", () => {
+  breeder1Cells();
+  modalArea.classList.toggle('is-show');
+}, false);
+
+//ボタンイベントリスナ：AppChange
 document.getElementById("app-logwatch").addEventListener("click", () => {
   logger("dom","app-logwatch");
   console.log(getYMDHMSM() + "|dom|app-logwatch");
