@@ -18,6 +18,22 @@ let elGen; //世代数表示要素
 let endlessFlg = false; //安定→random→onStart
 let endlessType = "random"; //エンドレスモードの種類の初期値「ランダム」
 
+// 配置：オリジナル1(横4:横縦1空け:縦3パターン)
+let org1Cells = () => {
+  logger("dom","app-lg-breeder3[square] start");
+
+  cells[1][1] = 1;
+  cells[2][1] = 1;
+  cells[3][1] = 1;
+  cells[4][1] = 1;
+
+  cells[2][3] = 1;
+  cells[2][4] = 1;
+  cells[2][5] = 1;
+
+  redraw();
+};
+ 
 // 配置：ブリーダー3(正方形タイプ)
 let breeder3Cells = () => {
   logger("dom","app-lg-breeder3[square] start");
@@ -276,6 +292,8 @@ let nextGeneration = () => {
         breeder2Cells();
       } else if (endlessType == "brsquare") {
         breeder3Cells();
+      } else if (endlessType == "org314") {
+        org1Cells();
       } else {
         randomCells();
       }

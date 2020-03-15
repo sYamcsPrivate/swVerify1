@@ -631,6 +631,7 @@ app.page
             <option value="brline">brline</option>
             <option value="brmin">brmin</option>
             <option value="brsquare">brsquare</option>
+            <option value="org314">org314</option>
           </select>
         </div>
       </ul>
@@ -645,6 +646,7 @@ app.page
         <li class="btn menu-btn" id="app-lg-breeder1">brline</li>
         <li class="btn menu-btn" id="app-lg-breeder2">brmin</li>
         <li class="btn menu-btn" id="app-lg-breeder3">brsquare</li>
+        <li class="btn menu-btn" id="app-lg-org1">org314</li>
       </ul>
 
 </span>
@@ -918,6 +920,10 @@ document.getElementById('app-lg-breeder2').addEventListener("click", () => {
 }, false);
 document.getElementById('app-lg-breeder3').addEventListener("click", () => {
   breeder3Cells();
+  modalArea.classList.toggle('is-show');
+}, false);
+document.getElementById('app-lg-org1').addEventListener("click", () => {
+  org1Cells();
   modalArea.classList.toggle('is-show');
 }, false);
 
